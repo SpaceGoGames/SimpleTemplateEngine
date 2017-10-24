@@ -1,0 +1,30 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Simple Template Engine",
+	"Description": "Text based template engine for UE4",
+	"Category": "Editor",
+	"CreatedBy": "Playspace S.L.",
+	"CreatedByURL": "https://www.playspace.com",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"EnabledByDefault": true,
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "SimpleTemplateEngine",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "SimpleTemplateEngineEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+
+	]
+}
