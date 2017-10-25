@@ -6,6 +6,8 @@
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
 
+#include "Compiler/SimpleTemplateCompiler.h"
+
 #include "SimpleTemplate.generated.h"
 
 
@@ -21,11 +23,34 @@ class SIMPLETEMPLATE_API USimpleTemplate
 
 public:
 
+#if WITH_EDITOR
 	/** Holds the stored text. */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Simple Template")
 	FText Template;
 
-	void Compile();
+	// TemplateErrors
+
+	bool Compile();
+#endif
+
+	// UObject interface
+	virtual void Serialize(FArchive& Ar) override;
+
+private:
+	FTokenArray Tokens;
+
+	/** Add a token to our token list */
+	bool AddToken(FToken* token, bool checked = false)
+	{
+		FString buildError = token->Build();
+		if (buildError.IsEmpty())
+		{
+			Tokens.Add(MakeShareable(token));
+			return true;
+		}
+		//check(!checked || buildError.IsEmpty());
+		return false;
+	}
 };
 
 //
