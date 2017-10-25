@@ -13,7 +13,7 @@
 USimpleTemplateFactory::USimpleTemplateFactory( const FObjectInitializer& ObjectInitializer )
 	: Super(ObjectInitializer)
 {
-	Formats.Add(FString(TEXT("txt;")) + NSLOCTEXT("USimpleTemplateFactory", "FormatTxt", "Text File").ToString());
+	Formats.Add(FString(TEXT("stf;")) + NSLOCTEXT("USimpleTemplateFactory", "FormatTxt", "Simple Template File").ToString());
 	SupportedClass = USimpleTemplate::StaticClass();
 	bCreateNew = false;
 	bEditorImport = true;
