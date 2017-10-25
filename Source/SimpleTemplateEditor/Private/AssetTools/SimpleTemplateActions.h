@@ -9,7 +9,7 @@ class ISlateStyle;
 
 
 /**
- * Implements an action for UTextAsset assets.
+ * Implements an action for USimpleTemplate assets.
  */
 class FSimpleTemplateActions
 	: public FAssetTypeActions_Base

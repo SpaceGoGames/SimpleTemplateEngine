@@ -1,6 +1,7 @@
 // Copyright Playspace S.L. 2017
 
 #include "SimpleTemplateFactory.h"
+
 #include "Containers/UnrealString.h"
 #include "SimpleTemplate.h"
 #include "Misc/FileHelper.h"
@@ -12,12 +13,11 @@
 USimpleTemplateFactory::USimpleTemplateFactory( const FObjectInitializer& ObjectInitializer )
 	: Super(ObjectInitializer)
 {
-	Formats.Add(FString(TEXT("ste;")) + NSLOCTEXT("USimpleTemplateFactory", "FormatSTE", "Simple Template Engine File").ToString());
+	Formats.Add(FString(TEXT("txt;")) + NSLOCTEXT("USimpleTemplateFactory", "FormatTxt", "Text File").ToString());
 	SupportedClass = USimpleTemplate::StaticClass();
 	bCreateNew = false;
 	bEditorImport = true;
 }
-
 
 UObject* USimpleTemplateFactory::FactoryCreateFile(UClass* InClass, UObject* InParent, FName InName, EObjectFlags Flags, const FString& Filename, const TCHAR* Parms, FFeedbackContext* Warn, bool& bOutOperationCanceled)
 {

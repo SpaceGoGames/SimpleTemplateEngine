@@ -1,10 +1,10 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Copyright Playspace S.L. 2017
 
 namespace UnrealBuildTool.Rules
 {
-	public class SimpleTemplateEngine : ModuleRules
+	public class SimpleTemplate : ModuleRules
 	{
-		public SimpleTemplateEngine(ReadOnlyTargetRules Target) : base(Target)
+		public SimpleTemplate(ReadOnlyTargetRules Target) : base(Target)
 		{
 			PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
@@ -17,7 +17,7 @@ namespace UnrealBuildTool.Rules
 
 			PrivateIncludePaths.AddRange(
 				new string[] {
-					"Runtime/SimpleTemplateEngine/Private",
+					"Runtime/SimpleTemplate/Private",
 				});
 		}
 	}

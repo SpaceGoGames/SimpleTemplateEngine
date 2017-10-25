@@ -36,7 +36,7 @@ enum class ETokenType : uint8
     EndFor
 };
 
-class SIMPLETEMPLATEENGINE_API FToken
+class SIMPLETEMPLATE_API FToken
 {
 public:
 	FToken(const FString& InExpression)
@@ -72,7 +72,7 @@ protected:
 typedef TSharedPtr<FToken> FTokenPtr;
 typedef TArray<FTokenPtr> FTokenArray;
 
-class SIMPLETEMPLATEENGINE_API FTokenText : public FToken
+class SIMPLETEMPLATE_API FTokenText : public FToken
 {
 public:
     FTokenText(const FString& InText)
@@ -84,7 +84,7 @@ public:
     }
 };
 
-class SIMPLETEMPLATEENGINE_API FTokenVar : public FToken
+class SIMPLETEMPLATE_API FTokenVar : public FToken
 {
 public:
     FTokenVar(const FString& InKey)
@@ -102,7 +102,7 @@ public:
 };
 
 
-class SIMPLETEMPLATEENGINE_API FTokenNested : public FToken
+class SIMPLETEMPLATE_API FTokenNested : public FToken
 {
 
 public:
@@ -114,7 +114,7 @@ public:
 	//FTokenArray Children;
 };
 
-class SIMPLETEMPLATEENGINE_API FTokenFor : public FTokenNested
+class SIMPLETEMPLATE_API FTokenFor : public FTokenNested
 {
 public:
 	FTokenFor(const FString& Expresion)
@@ -146,7 +146,7 @@ public:
 	FString Value;
 };
 
-class SIMPLETEMPLATEENGINE_API FTokenIf : public FTokenNested
+class SIMPLETEMPLATE_API FTokenIf : public FTokenNested
 {
 public:
 	FTokenIf(const FString& Expresion)
@@ -211,7 +211,7 @@ public:
 	FString Value;
 };
 
-class SIMPLETEMPLATEENGINE_API FTokenEndIf : public FTokenNested
+class SIMPLETEMPLATE_API FTokenEndIf : public FTokenNested
 {
 public:
 	FTokenEndIf(const FString& Expresion)
@@ -232,7 +232,7 @@ public:
 	}
 };
 
-class SIMPLETEMPLATEENGINE_API FTokenEndFor : public FTokenNested
+class SIMPLETEMPLATE_API FTokenEndFor : public FTokenNested
 {
 public:
 	FTokenEndFor(const FString& Expresion)
@@ -257,7 +257,7 @@ public:
 // The template parser
 //
 template <class CharType = TCHAR>
-class SIMPLETEMPLATEENGINE_API TTemplateTokenizer
+class SIMPLETEMPLATE_API TTemplateTokenizer
 {
 public:
     static TSharedRef< TTemplateTokenizer<CharType>> Create()
@@ -602,7 +602,7 @@ private:
 
 };
 
-class SIMPLETEMPLATEENGINE_API FStringTemplateParser
+class SIMPLETEMPLATE_API FStringTemplateParser
 	: public TTemplateTokenizer<TCHAR>
 {
 public:
@@ -638,7 +638,7 @@ protected:
 
 
 template <class CharType = TCHAR>
-class SIMPLETEMPLATEENGINE_API TTemplateCompilerFactory
+class SIMPLETEMPLATE_API TTemplateCompilerFactory
 {
 public:
 

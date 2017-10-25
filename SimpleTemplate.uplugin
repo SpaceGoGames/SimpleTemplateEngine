@@ -1,0 +1,32 @@
+{
+	"FileVersion" : 3,
+	"Version" : 7,
+	"VersionName" : "7.0",
+	"EngineVersion" : "4.17.0",
+	"FriendlyName" : "Simple Templat",
+	"Description" : "Adds an editable text content asset for personal notes.",
+	"Category" : "Editor",
+	"CreatedBy" : "Epic Games Inc",
+	"CreatedByURL" : "http://epicgames.com",
+	"DocsURL" : "",
+	"MarketplaceURL" : "",
+	"SupportURL" : "",
+	"EnabledByDefault" : true,
+	"CanContainContent" : false,
+	"IsBetaVersion" : false,
+	"Installed" : false,
+	"Modules" :
+	[
+		{
+			"Name" : "SimpleTemplate",
+			"Type" : "Runtime",
+			"LoadingPhase" : "Default"
+		},
+		{
+			"Name" : "SimpleTemplateEditor",
+			"Type" : "Editor",
+			"LoadingPhase" : "Default"
+		}
+
+	]
+}

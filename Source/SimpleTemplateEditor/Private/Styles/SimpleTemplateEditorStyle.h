@@ -17,30 +17,30 @@
 /**
  * Implements the visual style of the text asset editor UI.
  */
-class FSimpleTemplateEngineEditorStyle
+class FSimpleTemplateEditorStyle
 	: public FSlateStyleSet
 {
 public:
 
 	/** Default constructor. */
-	 FSimpleTemplateEngineEditorStyle()
-		 : FSlateStyleSet("SimpleTemplateEngineEditorStyle")
+	 FSimpleTemplateEditorStyle()
+		 : FSlateStyleSet("SimpleTemplateEditorStyle")
 	 {
 		const FVector2D Icon16x16(16.0f, 16.0f);
 		const FVector2D Icon20x20(20.0f, 20.0f);
 		const FVector2D Icon40x40(40.0f, 40.0f);
 
-		const FString BaseDir = IPluginManager::Get().FindPlugin("SimpleTemplateEngine")->GetBaseDir();
+		const FString BaseDir = IPluginManager::Get().FindPlugin("SimpleTemplate")->GetBaseDir();
 		SetContentRoot(BaseDir / TEXT("Content"));
 
 		// set new styles here, for example...
-		//Set("PlayspaceSDKEditor.FancyButton", new IMAGE_BRUSH("icon_forward_40x", Icon40x40));
+		//Set("SimpleTemplateEditor.FancyButton", new IMAGE_BRUSH("icon_forward_40x", Icon40x40));
 		
 		FSlateStyleRegistry::RegisterSlateStyle(*this);
 	 }
 
 	 /** Destructor. */
-	 ~FSimpleTemplateEngineEditorStyle()
+	 ~FSimpleTemplateEditorStyle()
 	 {
 		FSlateStyleRegistry::UnRegisterSlateStyle(*this);
 	 }

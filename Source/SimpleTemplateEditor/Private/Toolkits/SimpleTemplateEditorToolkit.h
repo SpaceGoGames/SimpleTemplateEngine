@@ -1,4 +1,4 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Copyright Playspace S.L. 2017
 
 #pragma once
 
@@ -6,7 +6,6 @@
 #include "Templates/SharedPointer.h"
 #include "Toolkits/AssetEditorToolkit.h"
 #include "UObject/GCObject.h"
-#include "SimpleTemplate.h"
 
 class FSpawnTabArgs;
 class ISlateStyle;
@@ -83,7 +82,7 @@ private:
 
 private:
 
-	/** Template to be edited */
+	/** The text asset being edited. */
 	USimpleTemplate* SimpleTemplate;
 
 	/** Pointer to the style set to use for toolkits. */

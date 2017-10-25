@@ -1,4 +1,4 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Copyright Playspace S.L. 2017
 
 #include "SimpleTemplateEditorToolkit.h"
 
@@ -6,10 +6,13 @@
 #include "EditorReimportHandler.h"
 #include "EditorStyleSet.h"
 #include "SSimpleTemplateEditor.h"
+#include "SimpleTemplate.h"
 #include "UObject/NameTypes.h"
 #include "Widgets/Docking/SDockTab.h"
 
 #define LOCTEXT_NAMESPACE "FSimpleTemplateEditorToolkit"
+
+DEFINE_LOG_CATEGORY_STATIC(LogSimpleTemplateEditor, Log, All);
 
 
 /* Local constants
@@ -18,9 +21,12 @@
 namespace SimpleTemplateEditor
 {
 	static const FName AppIdentifier("SimpleTemplateEditorApp");
-	static const FName TabId("SimpleTemplateEditor");
+	static const FName TabId("TextEditor");
 }
 
+
+/* FSimpleTemplateEditorToolkit structors
+ *****************************************************************************/
 
 FSimpleTemplateEditorToolkit::FSimpleTemplateEditorToolkit(const TSharedRef<ISlateStyle>& InStyle)
 	: SimpleTemplate(nullptr)
@@ -35,6 +41,10 @@ FSimpleTemplateEditorToolkit::~FSimpleTemplateEditorToolkit()
 
 	GEditor->UnregisterForUndo(this);
 }
+
+
+/* FSimpleTemplateEditorToolkit interface
+ *****************************************************************************/
 
 void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate, const EToolkitMode::Type InMode, const TSharedPtr<class IToolkitHost>& InToolkitHost)
 {
@@ -80,7 +90,7 @@ void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate,
 		Layout,
 		true /*bCreateDefaultStandaloneMenu*/,
 		true /*bCreateDefaultToolbar*/,
-		SimpleTemplate
+		InSimpleTemplate
 	);
 
 	RegenerateMenusAndToolbars();
@@ -92,19 +102,19 @@ void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate,
 
 FString FSimpleTemplateEditorToolkit::GetDocumentationLink() const
 {
-	return FString(TEXT("https://www.playspace.com"));
+	return FString(TEXT("https://github.com/ue4plugins/SimpleTemplate"));
 }
 
 
 void FSimpleTemplateEditorToolkit::RegisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
 {
-	WorkspaceMenuCategory = InTabManager->AddLocalWorkspaceMenuCategory(LOCTEXT("WorkspaceMenu_SimpleTemplateditor", "Simple Template Editor"));
+	WorkspaceMenuCategory = InTabManager->AddLocalWorkspaceMenuCategory(LOCTEXT("WorkspaceMenu_SimpleTemplateEditor", "Text Asset Editor"));
 	auto WorkspaceMenuCategoryRef = WorkspaceMenuCategory.ToSharedRef();
 
 	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
 
 	InTabManager->RegisterTabSpawner(SimpleTemplateEditor::TabId, FOnSpawnTab::CreateSP(this, &FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab, SimpleTemplateEditor::TabId))
-		.SetDisplayName(LOCTEXT("SimpleTemplateTabName", "Simple Templater"))
+		.SetDisplayName(LOCTEXT("TextEditorTabName", "Text Editor"))
 		.SetGroup(WorkspaceMenuCategoryRef)
 		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Viewports"));
 }
@@ -123,7 +133,7 @@ void FSimpleTemplateEditorToolkit::UnregisterTabSpawners(const TSharedRef<FTabMa
 
 FText FSimpleTemplateEditorToolkit::GetBaseToolkitName() const
 {
-	return LOCTEXT("AppLabel", "Simple Template Editor");
+	return LOCTEXT("AppLabel", "Text Asset Editor");
 }
 
 
@@ -167,7 +177,7 @@ void FSimpleTemplateEditorToolkit::PostRedo(bool bSuccess)
 }
 
 
-/* SimpleTemplateEditorToolkit callbacks
+/* FSimpleTemplateEditorToolkit callbacks
  *****************************************************************************/
 
 TSharedRef<SDockTab> FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab(const FSpawnTabArgs& Args, FName TabIdentifier)

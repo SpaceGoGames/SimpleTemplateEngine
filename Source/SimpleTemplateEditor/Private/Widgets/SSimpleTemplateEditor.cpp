@@ -4,9 +4,12 @@
 
 #include "Fonts/SlateFontInfo.h"
 #include "Internationalization/Text.h"
+#include "SimpleTemplate.h"
 #include "UObject/Class.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Input/SMultiLineEditableTextBox.h"
+
+#include "SimpleTemplateEditorSettings.h"
 
 
 #define LOCTEXT_NAMESPACE "SSimpleTemplateEditor"
@@ -24,6 +27,9 @@ SSimpleTemplateEditor::~SSimpleTemplateEditor()
 void SSimpleTemplateEditor::Construct(const FArguments& InArgs, USimpleTemplate* InSimpleTemplate, const TSharedRef<ISlateStyle>& InStyle)
 {
 	SimpleTemplate = InSimpleTemplate;
+
+	auto Settings = GetDefault<USimpleTemplateEditorSettings>();
+
 	ChildSlot
 	[
 		SNew(SVerticalBox)
@@ -32,15 +38,22 @@ void SSimpleTemplateEditor::Construct(const FArguments& InArgs, USimpleTemplate*
 			.FillHeight(1.0f)
 			[
 				SAssignNew(EditableTextBox, SMultiLineEditableTextBox)
+					.BackgroundColor((Settings != nullptr) ? Settings->BackgroundColor : FLinearColor::White)
+					.Font((Settings != nullptr) ? Settings->Font : FSlateFontInfo())
+					.ForegroundColor((Settings != nullptr) ? Settings->ForegroundColor : FLinearColor::Black)
+					.Margin((Settings != nullptr) ? Settings->Margin : 4.0f)
 					.OnTextChanged(this, &SSimpleTemplateEditor::HandleEditableTextBoxTextChanged)
 					.OnTextCommitted(this, &SSimpleTemplateEditor::HandleEditableTextBoxTextCommitted)
 					.Text(SimpleTemplate->Template)
 			]
 	];
 
-	FCoreUObjectDelegates::OnObjectPropertyChanged.AddSP(this, &SSimpleTemplateEditor::HandleAssetPropertyChanged);
+	FCoreUObjectDelegates::OnObjectPropertyChanged.AddSP(this, &SSimpleTemplateEditor::HandleSimpleTemplatePropertyChanged);
 }
 
+
+/* SSimpleTemplateEditor callbacks
+ *****************************************************************************/
 
 void SSimpleTemplateEditor::HandleEditableTextBoxTextChanged(const FText& NewText)
 {
@@ -54,7 +67,7 @@ void SSimpleTemplateEditor::HandleEditableTextBoxTextCommitted(const FText& Comm
 }
 
 
-void SSimpleTemplateEditor::HandleAssetPropertyChanged(UObject* Object, FPropertyChangedEvent& PropertyChangedEvent)
+void SSimpleTemplateEditor::HandleSimpleTemplatePropertyChanged(UObject* Object, FPropertyChangedEvent& PropertyChangedEvent)
 {
 	if (Object == SimpleTemplate)
 	{

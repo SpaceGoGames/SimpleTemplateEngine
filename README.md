@@ -1,4 +1,4 @@
-# Simple Template Engine
+# Simple Template
 
 Text based template engine with logic. Templates are compiled for better reuse and 
 faster runtime usage.
@@ -33,4 +33,4 @@ Legal info
 
 Unreal® is a trademark or registered trademark of Epic Games, Inc. in the United States of America and elsewhere.
 
-Unreal® Engine, Copyright 1998 – 2014, Epic Games, Inc. All rights reserved.
+Unreal® Engine, Copyright 1998 – 2017, Epic Games, Inc. All rights reserved.

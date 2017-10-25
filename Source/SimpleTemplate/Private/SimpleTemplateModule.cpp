@@ -1,4 +1,4 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Copyright Playspace S.L. 2017
 
 #include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
@@ -7,7 +7,7 @@
 /**
  * Implements the SimpleTemplate module.
  */
-class FSimpleTemplateEngine
+class FSimpleTemplateModule
 	: public IModuleInterface
 {
 public:
@@ -24,4 +24,4 @@ public:
 };
 
 
-IMPLEMENT_MODULE(FSimpleTemplateEngine, SimpleTemplateEngine);
+IMPLEMENT_MODULE(FSimpleTemplateModule, SimpleTemplate);

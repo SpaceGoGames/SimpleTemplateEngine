@@ -3,8 +3,8 @@
 #include "SimpleTemplateActions.h"
 
 #include "Framework/MultiBox/MultiBoxBuilder.h"
-#include "Styling/SlateStyle.h"
 #include "SimpleTemplate.h"
+#include "Styling/SlateStyle.h"
 
 #include "SimpleTemplateEditorToolkit.h"
 
@@ -12,7 +12,7 @@
 #define LOCTEXT_NAMESPACE "AssetTypeActions"
 
 
-/* FTextAssetActions constructors
+/* FSimpleTemplateActions constructors
  *****************************************************************************/
 
 FSimpleTemplateActions::FSimpleTemplateActions(const TSharedRef<ISlateStyle>& InStyle)
@@ -36,8 +36,8 @@ void FSimpleTemplateActions::GetActions(const TArray<UObject*>& InObjects, FMenu
 	auto SimpleTemplates = GetTypedWeakObjectPtrs<USimpleTemplate>(InObjects);
 
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("SimpleTemplate_Compile", "Compile"),
-		LOCTEXT("SimpleTemplate_CompileToolTip", "Compile all selected SimpleTemplate asset(s)"),
+		LOCTEXT("SimpleTemplate_ReverseText", "Compile"),
+		LOCTEXT("SimpleTemplate_ReverseTextToolTip", "Compile selected SimpleTemplate asset(s)."),
 		FSlateIcon(),
 		FUIAction(
 			FExecuteAction::CreateLambda([=]{
@@ -45,7 +45,7 @@ void FSimpleTemplateActions::GetActions(const TArray<UObject*>& InObjects, FMenu
 				{
 					if (SimpleTemplate.IsValid() && !SimpleTemplate->Template.IsEmpty())
 					{
-						SimpleTemplate->Stuff();
+						SimpleTemplate->Compile();
 						SimpleTemplate->PostEditChange();
 						SimpleTemplate->MarkPackageDirty();
 					}
@@ -74,7 +74,7 @@ uint32 FSimpleTemplateActions::GetCategories()
 
 FText FSimpleTemplateActions::GetName() const
 {
-	return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_SimpleTemplate", "Simple Template");
+	return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_SimpleTemplate", "Text Asset");
 }
 
 

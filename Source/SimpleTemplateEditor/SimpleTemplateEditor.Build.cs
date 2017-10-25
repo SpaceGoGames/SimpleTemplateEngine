@@ -1,10 +1,10 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Copyright Playspace S.L. 2017
 
 using UnrealBuildTool;
 
-public class SimpleTemplateEngineEditor : ModuleRules
+public class SimpleTemplateEditor : ModuleRules
 {
-	public SimpleTemplateEngineEditor(ReadOnlyTargetRules Target) : base(Target)
+	public SimpleTemplateEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
@@ -17,13 +17,13 @@ public class SimpleTemplateEngineEditor : ModuleRules
 
 		PrivateIncludePaths.AddRange(
 			new string[] {
-				"SimpleTemplateEngineEditor/Private",
-				"SimpleTemplateEngineEditor/Private/AssetTools",
-				"SimpleTemplateEngineEditor/Private/Factories",
-				"SimpleTemplateEngineEditor/Private/Shared",
-				"SimpleTemplateEngineEditor/Private/Styles",
-				"SimpleTemplateEngineEditor/Private/Toolkits",
-				"SimpleTemplateEngineEditor/Private/Widgets",
+				"SimpleTemplateEditor/Private",
+				"SimpleTemplateEditor/Private/AssetTools",
+				"SimpleTemplateEditor/Private/Factories",
+				"SimpleTemplateEditor/Private/Shared",
+				"SimpleTemplateEditor/Private/Styles",
+				"SimpleTemplateEditor/Private/Toolkits",
+				"SimpleTemplateEditor/Private/Widgets",
 			});
 
 		PrivateDependencyModuleNames.AddRange(
@@ -38,7 +38,7 @@ public class SimpleTemplateEngineEditor : ModuleRules
 				"Projects",
 				"Slate",
 				"SlateCore",
-				"SimpleTemplateEngine",
+				"SimpleTemplate",
 				"UnrealEd",
 			});
 

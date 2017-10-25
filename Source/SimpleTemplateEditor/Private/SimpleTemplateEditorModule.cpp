@@ -9,30 +9,59 @@
 #include "Toolkits/AssetEditorToolkit.h"
 
 #include "AssetTools/SimpleTemplateActions.h"
-#include "Styles/SimpleTemplateEngineEditorStyle.h"
+#include "Styles/SimpleTemplateEditorStyle.h"
+#include "SimpleTemplateEditorSettings.h"
 
-#define LOCTEXT_NAMESPACE "FSimpleTemplateEngineEditor"
 
-class FSimpleTemplateEngineEditor
-	: public IModuleInterface
-	, public IHasMenuExtensibility
+#define LOCTEXT_NAMESPACE "FSimpleTemplateEditorModule"
+
+
+/**
+ * Implements the SimpleTemplateEditor module.
+ */
+class FSimpleTemplateEditorModule
+	: public IHasMenuExtensibility
 	, public IHasToolBarExtensibility
+	, public IModuleInterface
 {
 public:
 
-	/** IModuleInterface interface */
+	//~ IHasMenuExtensibility interface
+
+	virtual TSharedPtr<FExtensibilityManager> GetMenuExtensibilityManager() override
+	{
+		return MenuExtensibilityManager;
+	}
+
+public:
+
+	//~ IHasToolBarExtensibility interface
+
+	virtual TSharedPtr<FExtensibilityManager> GetToolBarExtensibilityManager() override
+	{
+		return ToolBarExtensibilityManager;
+	}
+
+public:
+
+	//~ IModuleInterface interface
+
 	virtual void StartupModule() override
 	{
-		Style = MakeShareable(new FSimpleTemplateEngineEditorStyle());
+		Style = MakeShareable(new FSimpleTemplateEditorStyle());
+
+//		FSimpleTemplateEditorCommands::Register();
 
 		RegisterAssetTools();
 		RegisterMenuExtensions();
+		RegisterSettings();
 	}
 
 	virtual void ShutdownModule() override
 	{
 		UnregisterAssetTools();
 		UnregisterMenuExtensions();
+		UnregisterSettings();
 	}
 
 	virtual bool SupportsDynamicReloading() override
@@ -40,23 +69,9 @@ public:
 		return true;
 	}
 
-	/** IHasMenuExtensibility interface */
-	virtual TSharedPtr<FExtensibilityManager> GetMenuExtensibilityManager() override
-	{
-		return MenuExtensibilityManager;
-	}
-	/** IHasMenuExtensibility interface */
-
-	/** IHasToolBarExtensibility interface */
-	virtual TSharedPtr<FExtensibilityManager> GetToolBarExtensibilityManager() override
-	{
-		return ToolBarExtensibilityManager;
-	}
-	/** IHasToolBarExtensibility interface */
-
 protected:
 
-	/** Asset Tools */
+	/** Registers asset tool actions. */
 	void RegisterAssetTools()
 	{
 		IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
@@ -64,12 +79,34 @@ protected:
 		RegisterAssetTypeAction(AssetTools, MakeShareable(new FSimpleTemplateActions(Style.ToSharedRef())));
 	}
 
+	/**
+	 * Registers a single asset type action.
+	 *
+	 * @param AssetTools The asset tools object to register with.
+	 * @param Action The asset type action to register.
+	 */
 	void RegisterAssetTypeAction(IAssetTools& AssetTools, TSharedRef<IAssetTypeActions> Action)
 	{
 		AssetTools.RegisterAssetTypeActions(Action);
 		RegisteredAssetTypeActions.Add(Action);
 	}
 
+	/** Register the text asset editor settings. */
+	void RegisterSettings()
+	{
+		ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
+
+		if (SettingsModule != nullptr)
+		{
+			ISettingsSectionPtr SettingsSection = SettingsModule->RegisterSettings("Editor", "Plugins", "SimpleTemplate",
+				LOCTEXT("SimpleTemplateSettingsName", "Text Asset"),
+				LOCTEXT("SimpleTemplateSettingsDescription", "Configure the Text Asset plug-in."),
+				GetMutableDefault<USimpleTemplateEditorSettings>()
+			);
+		}
+	}
+
+	/** Unregisters asset tool actions. */
 	void UnregisterAssetTools()
 	{
 		FAssetToolsModule* AssetToolsModule = FModuleManager::GetModulePtr<FAssetToolsModule>("AssetTools");
@@ -84,6 +121,19 @@ protected:
 			}
 		}
 	}
+
+	/** Unregister the text asset editor settings. */
+	void UnregisterSettings()
+	{
+		ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
+
+		if (SettingsModule != nullptr)
+		{
+			SettingsModule->UnregisterSettings("Editor", "Plugins", "SimpleTemplate");
+		}
+	}
+
+protected:
 
 	/** Registers main menu and tool bar menu extensions. */
 	void RegisterMenuExtensions()
@@ -100,6 +150,7 @@ protected:
 	}
 
 private:
+
 	/** Holds the menu extensibility manager. */
 	TSharedPtr<FExtensibilityManager> MenuExtensibilityManager;
 
@@ -113,6 +164,8 @@ private:
 	TSharedPtr<FExtensibilityManager> ToolBarExtensibilityManager;
 };
 
-IMPLEMENT_MODULE(FSimpleTemplateEngineEditor, SimpleTemplateEngineEditor)
+
+IMPLEMENT_MODULE(FSimpleTemplateEditorModule, SimpleTemplateEditor);
+
 
 #undef LOCTEXT_NAMESPACE

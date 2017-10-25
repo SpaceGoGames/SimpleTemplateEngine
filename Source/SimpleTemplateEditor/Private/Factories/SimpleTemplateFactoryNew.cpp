@@ -1,7 +1,12 @@
 // Copyright Playspace S.L. 2017
 
 #include "SimpleTemplateFactoryNew.h"
+
 #include "SimpleTemplate.h"
+
+
+/* USimpleTemplateFactoryNew structors
+ *****************************************************************************/
 
 USimpleTemplateFactoryNew::USimpleTemplateFactoryNew(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -10,6 +15,10 @@ USimpleTemplateFactoryNew::USimpleTemplateFactoryNew(const FObjectInitializer& O
 	bCreateNew = true;
 	bEditAfterNew = true;
 }
+
+
+/* UFactory overrides
+ *****************************************************************************/
 
 UObject* USimpleTemplateFactoryNew::FactoryCreateNew(UClass* InClass, UObject* InParent, FName InName, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
 {

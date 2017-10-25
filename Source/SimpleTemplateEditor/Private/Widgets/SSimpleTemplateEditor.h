@@ -6,7 +6,6 @@
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/Input/SMultiLineEditableTextBox.h"
-#include "SimpleTemplate.h"
 
 class FText;
 class ISlateStyle;
@@ -46,14 +45,14 @@ private:
 	/** Callback for committed text in the editable text box. */
 	void HandleEditableTextBoxTextCommitted(const FText& Comment, ETextCommit::Type CommitType);
 
-	/** Callback for property changes in the asset. */
-	void HandleAssetPropertyChanged(UObject* Object, FPropertyChangedEvent& PropertyChangedEvent);
+	/** Callback for property changes in the text asset. */
+	void HandleSimpleTemplatePropertyChanged(UObject* Object, FPropertyChangedEvent& PropertyChangedEvent);
 
 private:
 
 	/** Holds the editable text box widget. */
 	TSharedPtr<SMultiLineEditableTextBox> EditableTextBox;
 
-	/** The template asset */
+	/** Pointer to the text asset that is being edited. */
 	USimpleTemplate* SimpleTemplate;
 };
