@@ -21,7 +21,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogSimpleTemplateEditor, Log, All);
 namespace SimpleTemplateEditor
 {
 	static const FName AppIdentifier("SimpleTemplateEditorApp");
-	static const FName TabId("TextEditor");
+	static const FName TabId("TemplateEditor");
+	static const FName OutputTabId("TemplateCompileOutput");
 }
 
 
@@ -65,6 +66,8 @@ void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate,
 					FTabManager::NewSplitter()
 						->SetOrientation(Orient_Vertical)
 						->SetSizeCoefficient(0.66f)
+
+						// Toolbar
 						->Split
 						(
 							FTabManager::NewStack()
@@ -73,12 +76,23 @@ void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate,
 								->SetSizeCoefficient(0.1f)
 								
 						)
+						
+						// Template editor
 						->Split
 						(
 							FTabManager::NewStack()
 								->AddTab(SimpleTemplateEditor::TabId, ETabState::OpenedTab)
 								->SetHideTabWell(true)
-								->SetSizeCoefficient(0.9f)
+								->SetSizeCoefficient(0.8f)
+						)
+
+						// Compile error view
+						->Split
+						(
+							FTabManager::NewStack()
+							->AddTab(SimpleTemplateEditor::OutputTabId, ETabState::ClosedTab)
+							->SetHideTabWell(true)
+							->SetSizeCoefficient(0.1f)
 						)
 				)
 		);
@@ -114,7 +128,12 @@ void FSimpleTemplateEditorToolkit::RegisterTabSpawners(const TSharedRef<FTabMana
 	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
 
 	InTabManager->RegisterTabSpawner(SimpleTemplateEditor::TabId, FOnSpawnTab::CreateSP(this, &FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab, SimpleTemplateEditor::TabId))
-		.SetDisplayName(LOCTEXT("TextEditorTabName", "Template Editor"))
+		.SetDisplayName(LOCTEXT("TemplateEditorTabName", "Template Editor"))
+		.SetGroup(WorkspaceMenuCategoryRef)
+		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Viewports"));
+
+	InTabManager->RegisterTabSpawner(SimpleTemplateEditor::OutputTabId, FOnSpawnTab::CreateSP(this, &FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab, SimpleTemplateEditor::TabId))
+		.SetDisplayName(LOCTEXT("CompileOutputTabName", "Compile Output"))
 		.SetGroup(WorkspaceMenuCategoryRef)
 		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Viewports"));
 }
@@ -187,6 +206,11 @@ TSharedRef<SDockTab> FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab(cons
 	if (TabIdentifier == SimpleTemplateEditor::TabId)
 	{
 		TabWidget = SNew(SSimpleTemplateEditor, SimpleTemplate, Style);
+	}
+	else if (TabIdentifier == SimpleTemplateEditor::OutputTabId)
+	{
+		TabWidget = SNew(STextBlock)
+			.Text(LOCTEXT("NotImplemented", "Compile tab not implemented"));
 	}
 
 	return SNew(SDockTab)

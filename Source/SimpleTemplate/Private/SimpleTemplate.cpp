@@ -65,6 +65,7 @@ void USimpleTemplate::Serialize(FArchive& Ar)
 #if WITH_EDITOR
 bool USimpleTemplate::Compile()
 {
+	LastErrors.Empty();
 	auto compiler = TTemplateCompilerFactory<TCHAR>::Create(Template.ToString());
 	if (compiler->Tokenize())
 	{
@@ -76,7 +77,7 @@ bool USimpleTemplate::Compile()
 		}
 		return true;
 	}
-	// Failed to compile, show error in output
+	LastErrors.Add(compiler->GetLastError());
 	return false;
 }
 #endif

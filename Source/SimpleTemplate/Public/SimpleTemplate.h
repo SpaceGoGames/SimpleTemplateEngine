@@ -28,8 +28,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Simple Template")
 	FText Template;
 
-	// TemplateErrors
-	FSting
+	// TemplateError
+	UPROPERTY()
+	TArray<FString> LastErrors;
 
 	bool Compile();
 #endif
@@ -49,6 +50,7 @@ private:
 			Tokens.Add(MakeShareable(token));
 			return true;
 		}
+		LastErrors.Add(buildError);
 		//check(!checked || buildError.IsEmpty());
 		return false;
 	}
