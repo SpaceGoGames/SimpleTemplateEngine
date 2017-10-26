@@ -45,7 +45,7 @@ private:
 	/** Callback for committed text in the editable text box. */
 	void HandleEditableTextBoxTextCommitted(const FText& Comment, ETextCommit::Type CommitType);
 
-	/** Callback for property changes in the text asset. */
+	/** Callback for property changes in the Simple Template. */
 	void HandleSimpleTemplatePropertyChanged(UObject* Object, FPropertyChangedEvent& PropertyChangedEvent);
 
 private:
@@ -53,6 +53,6 @@ private:
 	/** Holds the editable text box widget. */
 	TSharedPtr<SMultiLineEditableTextBox> EditableTextBox;
 
-	/** Pointer to the text asset that is being edited. */
+	/** Pointer to the Simple Template that is being edited. */
 	USimpleTemplate* SimpleTemplate;
 };

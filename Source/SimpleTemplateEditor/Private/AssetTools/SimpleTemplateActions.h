@@ -4,6 +4,7 @@
 
 #include "AssetTypeActions_Base.h"
 #include "Templates/SharedPointer.h"
+#include "SimpleTemplate.h"
 
 class ISlateStyle;
 
@@ -40,4 +41,10 @@ private:
 
 	/** Pointer to the style set to use for toolkits. */
 	TSharedRef<ISlateStyle> Style;
+
+	/** Compile a selection of assets */
+	void CompileSelected(TArray<TWeakObjectPtr<USimpleTemplate>> SimpleTemplates);
+
+	/** Export a selection */
+	void ExportTemplates(TArray<TWeakObjectPtr<USimpleTemplate>> SimpleTemplates);
 };

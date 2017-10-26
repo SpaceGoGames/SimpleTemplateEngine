@@ -82,7 +82,7 @@ private:
 
 private:
 
-	/** The text asset being edited. */
+	/** The Simple Template being edited. */
 	USimpleTemplate* SimpleTemplate;
 
 	/** Pointer to the style set to use for toolkits. */

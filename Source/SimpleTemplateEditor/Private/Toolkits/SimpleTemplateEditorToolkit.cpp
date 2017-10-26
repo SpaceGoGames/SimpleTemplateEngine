@@ -108,7 +108,7 @@ FString FSimpleTemplateEditorToolkit::GetDocumentationLink() const
 
 void FSimpleTemplateEditorToolkit::RegisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
 {
-	WorkspaceMenuCategory = InTabManager->AddLocalWorkspaceMenuCategory(LOCTEXT("WorkspaceMenu_SimpleTemplateEditor", "Text Asset Editor"));
+	WorkspaceMenuCategory = InTabManager->AddLocalWorkspaceMenuCategory(LOCTEXT("WorkspaceMenu_SimpleTemplateEditor", "Simple Template Editor"));
 	auto WorkspaceMenuCategoryRef = WorkspaceMenuCategory.ToSharedRef();
 
 	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
@@ -133,7 +133,7 @@ void FSimpleTemplateEditorToolkit::UnregisterTabSpawners(const TSharedRef<FTabMa
 
 FText FSimpleTemplateEditorToolkit::GetBaseToolkitName() const
 {
-	return LOCTEXT("AppLabel", "Text Asset Editor");
+	return LOCTEXT("AppLabel", "Simple Template Editor");
 }
 
 

@@ -3,8 +3,12 @@
 #include "SimpleTemplateActions.h"
 
 #include "Framework/MultiBox/MultiBoxBuilder.h"
-#include "SimpleTemplate.h"
 #include "Styling/SlateStyle.h"
+
+#include "Framework/Application/SlateApplication.h"
+#include "DesktopPlatformModule.h"
+#include "Misc/Paths.h"
+#include "Misc/FileHelper.h"
 
 #include "SimpleTemplateEditorToolkit.h"
 
@@ -35,36 +39,63 @@ void FSimpleTemplateActions::GetActions(const TArray<UObject*>& InObjects, FMenu
 
 	auto SimpleTemplates = GetTypedWeakObjectPtrs<USimpleTemplate>(InObjects);
 
+
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("SimpleTemplate_ReverseText", "Compile"),
 		LOCTEXT("SimpleTemplate_ReverseTextToolTip", "Compile selected SimpleTemplate asset(s)."),
 		FSlateIcon(),
-		FUIAction(
-			FExecuteAction::CreateLambda([=]{
-				for (auto& SimpleTemplate : SimpleTemplates)
-				{
-					if (SimpleTemplate.IsValid() && !SimpleTemplate->Template.IsEmpty())
-					{
-						SimpleTemplate->Compile();
-						SimpleTemplate->PostEditChange();
-						SimpleTemplate->MarkPackageDirty();
-					}
-				}
-			}),
-			FCanExecuteAction::CreateLambda([=] {
-				for (auto& SimpleTemplate : SimpleTemplates)
-				{
-					if (SimpleTemplate.IsValid() && !SimpleTemplate->Template.IsEmpty())
-					{
-						return true;
-					}
-				}
-				return false;
-			})
-		)
-	);
+		FUIAction(FExecuteAction::CreateSP(this, &FSimpleTemplateActions::CompileSelected, SimpleTemplates), FCanExecuteAction()));
 }
 
+void FSimpleTemplateActions::CompileSelected(TArray<TWeakObjectPtr<USimpleTemplate>> SimpleTemplates)
+{
+	for (auto& SimpleTemplate : SimpleTemplates)
+	{
+		if (SimpleTemplate.IsValid() && !SimpleTemplate->Template.IsEmpty())
+		{
+			SimpleTemplate->Compile();
+			SimpleTemplate->PostEditChange();
+			SimpleTemplate->MarkPackageDirty();
+		}
+	}
+}
+
+void FSimpleTemplateActions::ExportTemplates(TArray<TWeakObjectPtr<USimpleTemplate>> SimpleTemplates)
+{
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+	if (DesktopPlatform != nullptr)
+	{
+		FString OutputDirectory = FPaths::GameDir();
+		FString FolderPath;
+		const bool bFolderSelected = DesktopPlatform->OpenDirectoryDialog(
+			FSlateApplication::Get().FindBestParentWindowHandleForDialogs(nullptr),
+			LOCTEXT("FolderDialogTitle", "Choose a directory to export the templates").ToString(),
+			OutputDirectory,
+			FolderPath
+		);
+
+		if (bFolderSelected)
+		{
+			if (!FolderPath.EndsWith(TEXT("/")))
+			{
+				FolderPath += TEXT("/");
+			}
+
+			OutputDirectory = FolderPath;
+
+			for (auto& SimpleTemplate: SimpleTemplates)
+			{
+				if (SimpleTemplate.IsValid())
+				{
+					TArray<FStringFormatArg> Args;
+					Args.Add(SimpleTemplate->GetName());
+					FString FileName = FString::Format(TEXT("{0}.stf"), Args);
+					FFileHelper::SaveStringToFile(SimpleTemplate->Template.ToString(), *(OutputDirectory / FileName), FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+				}
+			}
+		}
+	}
+}
 
 uint32 FSimpleTemplateActions::GetCategories()
 {
@@ -74,7 +105,7 @@ uint32 FSimpleTemplateActions::GetCategories()
 
 FText FSimpleTemplateActions::GetName() const
 {
-	return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_SimpleTemplate", "Text Asset");
+	return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_SimpleTemplate", "Simple Template");
 }
 
 

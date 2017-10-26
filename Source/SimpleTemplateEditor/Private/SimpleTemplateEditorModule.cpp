@@ -91,7 +91,7 @@ protected:
 		RegisteredAssetTypeActions.Add(Action);
 	}
 
-	/** Register the text asset editor settings. */
+	/** Register the Simple Template editor settings. */
 	void RegisterSettings()
 	{
 		ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
@@ -99,8 +99,8 @@ protected:
 		if (SettingsModule != nullptr)
 		{
 			ISettingsSectionPtr SettingsSection = SettingsModule->RegisterSettings("Editor", "Plugins", "SimpleTemplate",
-				LOCTEXT("SimpleTemplateSettingsName", "Text Asset"),
-				LOCTEXT("SimpleTemplateSettingsDescription", "Configure the Text Asset plug-in."),
+				LOCTEXT("SimpleTemplateSettingsName", "Simple Template"),
+				LOCTEXT("SimpleTemplateSettingsDescription", "Configure the Simple Template plug-in."),
 				GetMutableDefault<USimpleTemplateEditorSettings>()
 			);
 		}
@@ -122,7 +122,7 @@ protected:
 		}
 	}
 
-	/** Unregister the text asset editor settings. */
+	/** Unregister the Simple Template editor settings. */
 	void UnregisterSettings()
 	{
 		ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");

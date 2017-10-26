@@ -15,7 +15,7 @@
 
 
 /**
- * Implements the visual style of the text asset editor UI.
+ * Implements the visual style of the Simple Template editor UI.
  */
 class FSimpleTemplateEditorStyle
 	: public FSlateStyleSet

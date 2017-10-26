@@ -40,6 +40,7 @@ public class SimpleTemplateEditor : ModuleRules
 				"SlateCore",
 				"SimpleTemplate",
 				"UnrealEd",
+                "DesktopPlatform"
 			});
 
 		PrivateIncludePathModuleNames.AddRange(
