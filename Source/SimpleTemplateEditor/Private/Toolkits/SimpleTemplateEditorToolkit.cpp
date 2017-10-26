@@ -102,7 +102,7 @@ void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate,
 
 FString FSimpleTemplateEditorToolkit::GetDocumentationLink() const
 {
-	return FString(TEXT("https://github.com/ue4plugins/SimpleTemplate"));
+	return FString(TEXT("https://github.com/PlayspaceDev/SimpleTemplateEngine"));
 }
 
 
@@ -114,7 +114,7 @@ void FSimpleTemplateEditorToolkit::RegisterTabSpawners(const TSharedRef<FTabMana
 	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
 
 	InTabManager->RegisterTabSpawner(SimpleTemplateEditor::TabId, FOnSpawnTab::CreateSP(this, &FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab, SimpleTemplateEditor::TabId))
-		.SetDisplayName(LOCTEXT("TextEditorTabName", "Text Editor"))
+		.SetDisplayName(LOCTEXT("TextEditorTabName", "Template Editor"))
 		.SetGroup(WorkspaceMenuCategoryRef)
 		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Viewports"));
 }

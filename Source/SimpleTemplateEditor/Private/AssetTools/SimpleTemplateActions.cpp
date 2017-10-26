@@ -41,10 +41,16 @@ void FSimpleTemplateActions::GetActions(const TArray<UObject*>& InObjects, FMenu
 
 
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("SimpleTemplate_ReverseText", "Compile"),
-		LOCTEXT("SimpleTemplate_ReverseTextToolTip", "Compile selected SimpleTemplate asset(s)."),
+		LOCTEXT("SimpleTemplate_Compile", "Compile"),
+		LOCTEXT("SimpleTemplate_CompileToolTip", "Compile selected SimpleTemplate asset(s)."),
 		FSlateIcon(),
 		FUIAction(FExecuteAction::CreateSP(this, &FSimpleTemplateActions::CompileSelected, SimpleTemplates), FCanExecuteAction()));
+
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("SimpleTemplate_Export", "Export"),
+		LOCTEXT("SimpleTemplate_ExportToolTip", "Export selected SimpleTemplate asset(s)."),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateSP(this, &FSimpleTemplateActions::ExportTemplates, SimpleTemplates), FCanExecuteAction()));
 }
 
 void FSimpleTemplateActions::CompileSelected(TArray<TWeakObjectPtr<USimpleTemplate>> SimpleTemplates)

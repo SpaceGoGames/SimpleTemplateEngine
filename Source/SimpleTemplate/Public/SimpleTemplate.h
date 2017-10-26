@@ -29,6 +29,7 @@ public:
 	FText Template;
 
 	// TemplateErrors
+	FSting
 
 	bool Compile();
 #endif
