@@ -48,8 +48,6 @@ public:
 
 	virtual void StartupModule() override
 	{
-		Style = MakeShareable(new FSimpleTemplateEditorStyle());
-
 //		FSimpleTemplateEditorCommands::Register();
 
 		RegisterAssetTools();
@@ -76,7 +74,7 @@ protected:
 	{
 		IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 
-		RegisterAssetTypeAction(AssetTools, MakeShareable(new FSimpleTemplateActions(Style.ToSharedRef())));
+		RegisterAssetTypeAction(AssetTools, MakeShareable(new FSimpleTemplateActions(FSimpleTemplateEditorStyle::Get().ToSharedRef())));
 	}
 
 	/**
@@ -156,9 +154,6 @@ private:
 
 	/** The collection of registered asset type actions. */
 	TArray<TSharedRef<IAssetTypeActions>> RegisteredAssetTypeActions;
-
-	/** Holds the plug-ins style set. */
-	TSharedPtr<ISlateStyle> Style;
 
 	/** Holds the tool bar extensibility manager. */
 	TSharedPtr<FExtensibilityManager> ToolBarExtensibilityManager;

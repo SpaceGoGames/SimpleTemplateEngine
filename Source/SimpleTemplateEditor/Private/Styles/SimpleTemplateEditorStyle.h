@@ -22,6 +22,33 @@ class FSimpleTemplateEditorStyle
 {
 public:
 
+	static TSharedPtr< class ISlateStyle > Get()
+	{
+		if (!StyleSet.IsValid())
+		{
+			Initialize();
+		}
+		return StyleSet;
+	}
+
+	static FName GetName()
+	{
+		return StyleSet->GetStyleSetName();
+	}
+
+	/** Destructor. */
+	~FSimpleTemplateEditorStyle()
+	{
+		FSlateStyleRegistry::UnRegisterSlateStyle(*this);
+	}
+
+private:
+
+	static void Initialize()
+	{
+		StyleSet = MakeShareable(new FSimpleTemplateEditorStyle());
+	}
+
 	/** Default constructor. */
 	 FSimpleTemplateEditorStyle()
 		 : FSlateStyleSet("SimpleTemplateEditorStyle")
@@ -35,15 +62,16 @@ public:
 
 		// set new styles here, for example...
 		//Set("SimpleTemplateEditor.FancyButton", new IMAGE_BRUSH("icon_forward_40x", Icon40x40));
-		
+
+		// Make it available everywhere
+		StyleSet = MakeShareable(this);
+
 		FSlateStyleRegistry::RegisterSlateStyle(*this);
 	 }
 
-	 /** Destructor. */
-	 ~FSimpleTemplateEditorStyle()
-	 {
-		FSlateStyleRegistry::UnRegisterSlateStyle(*this);
-	 }
+
+public:
+	 static TSharedPtr< class FSlateStyleSet > StyleSet;
 };
 
 

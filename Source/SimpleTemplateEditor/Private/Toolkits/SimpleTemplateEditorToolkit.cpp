@@ -9,6 +9,8 @@
 #include "SimpleTemplate.h"
 #include "UObject/NameTypes.h"
 #include "Widgets/Docking/SDockTab.h"
+#include "Framework/MultiBox/MultiBoxExtender.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
 
 #define LOCTEXT_NAMESPACE "FSimpleTemplateEditorToolkit"
 
@@ -90,7 +92,7 @@ void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate,
 						->Split
 						(
 							FTabManager::NewStack()
-							->AddTab(SimpleTemplateEditor::OutputTabId, ETabState::ClosedTab)
+							->AddTab(SimpleTemplateEditor::OutputTabId, ETabState::OpenedTab)
 							->SetHideTabWell(true)
 							->SetSizeCoefficient(0.1f)
 						)
@@ -107,6 +109,8 @@ void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate,
 		InSimpleTemplate
 	);
 
+	ExtendMenu();
+	ExtendToolbar();
 	RegenerateMenusAndToolbars();
 }
 
@@ -132,7 +136,7 @@ void FSimpleTemplateEditorToolkit::RegisterTabSpawners(const TSharedRef<FTabMana
 		.SetGroup(WorkspaceMenuCategoryRef)
 		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Viewports"));
 
-	InTabManager->RegisterTabSpawner(SimpleTemplateEditor::OutputTabId, FOnSpawnTab::CreateSP(this, &FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab, SimpleTemplateEditor::TabId))
+	InTabManager->RegisterTabSpawner(SimpleTemplateEditor::OutputTabId, FOnSpawnTab::CreateSP(this, &FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab, SimpleTemplateEditor::OutputTabId))
 		.SetDisplayName(LOCTEXT("CompileOutputTabName", "Compile Output"))
 		.SetGroup(WorkspaceMenuCategoryRef)
 		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Viewports"));
@@ -220,5 +224,55 @@ TSharedRef<SDockTab> FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab(cons
 		];
 }
 
+/* Commands and Menu extensions
+*****************************************************************************/
+
+void FSimpleTemplateEditorToolkit::BindCommands()
+{
+	const FSimpleTemplateEditorCommands& Commands = FSimpleTemplateEditorCommands::Get();
+
+	const TSharedRef<FUICommandList>& UICommandList = GetToolkitCommands();
+
+	UICommandList->MapAction(Commands.Compile,
+		FExecuteAction::CreateSP(this, &FSimpleTemplateEditorToolkit::ActionCompile));
+}
+
+void FSimpleTemplateEditorToolkit::ExtendMenu()
+{
+}
+
+void FSimpleTemplateEditorToolkit::ExtendToolbar()
+{
+	struct Local
+	{
+		static void FillToolbar(FToolBarBuilder& ToolbarBuilder)
+		{
+			ToolbarBuilder.BeginSection("Command");
+			{
+				ToolbarBuilder.AddToolBarButton(FSimpleTemplateEditorCommands::Get().Compile);
+			}
+			ToolbarBuilder.EndSection();
+		}
+	};
+
+	TSharedPtr<FExtender> ToolbarExtender = MakeShareable(new FExtender);
+
+	ToolbarExtender->AddToolBarExtension(
+		"Asset",
+		EExtensionHook::After,
+		GetToolkitCommands(),
+		FToolBarExtensionDelegate::CreateStatic(&Local::FillToolbar)
+	);
+
+	AddToolbarExtender(ToolbarExtender);
+
+	//IPaper2DEditorModule* Paper2DEditorModule = &FModuleManager::LoadModuleChecked<IPaper2DEditorModule>("Paper2DEditor");
+	//AddToolbarExtender(Paper2DEditorModule->GetFlipbookEditorToolBarExtensibilityManager()->GetAllExtenders());
+}
+
+void FSimpleTemplateEditorToolkit::ActionCompile()
+{
+	SimpleTemplate->Compile();
+}
 
 #undef LOCTEXT_NAMESPACE

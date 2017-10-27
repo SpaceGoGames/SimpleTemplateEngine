@@ -75,11 +75,18 @@ protected:
 	virtual void PostUndo(bool bSuccess) override;
 	virtual void PostRedo(bool bSuccess) override;
 
+protected:
+	void BindCommands();
+	void ExtendMenu();
+	void ExtendToolbar();
+
 private:
 
 	/** Callback for spawning the Properties tab. */
 	TSharedRef<SDockTab> HandleTabManagerSpawnTab(const FSpawnTabArgs& Args, FName TabIdentifier);
 
+	// Editor actions
+	void ActionCompile();
 private:
 
 	/** The Simple Template being edited. */
