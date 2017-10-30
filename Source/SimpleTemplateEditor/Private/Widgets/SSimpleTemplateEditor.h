@@ -37,6 +37,8 @@ public:
 	 */
 	void Construct(const FArguments& InArgs, USimpleTemplate* InSimpleTemplate, const TSharedRef<ISlateStyle>& InStyle);
 
+	void GoTo(int32 LineNumber, int32 CharacterNumber);
+
 private:
 
 	/** Callback for text changes in the editable text box. */

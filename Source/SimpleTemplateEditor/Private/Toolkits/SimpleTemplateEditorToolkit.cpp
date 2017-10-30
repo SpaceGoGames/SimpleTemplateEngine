@@ -5,7 +5,6 @@
 #include "Editor.h"
 #include "EditorReimportHandler.h"
 #include "EditorStyleSet.h"
-#include "SSimpleTemplateEditor.h"
 #include "SimpleTemplate.h"
 #include "UObject/NameTypes.h"
 #include "Widgets/Docking/SDockTab.h"
@@ -219,11 +218,13 @@ TSharedRef<SDockTab> FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab(cons
 	if (TabIdentifier == SimpleTemplateEditor::TabId)
 	{
 		TabWidget = SNew(SSimpleTemplateEditor, SimpleTemplate, Style);
+		TemplateEditor = StaticCastSharedRef<SWidget>(TabWidget.ToSharedRef());
 	}
 	else if (TabIdentifier == SimpleTemplateEditor::OutputTabId)
 	{
 		TabWidget = SNew(STextBlock)
 			.Text(LOCTEXT("NotImplemented", "Compile tab not implemented"));
+		TemplateOutput = StaticCastSharedRef<SWidget>(TabWidget.ToSharedRef());
 	}
 
 	return SNew(SDockTab)
@@ -283,7 +284,15 @@ void FSimpleTemplateEditorToolkit::ExtendToolbar()
 
 void FSimpleTemplateEditorToolkit::ActionCompile()
 {
-	SimpleTemplate->Compile();
+	//TemplateOutput->SetText(FString(TEXT("Compile finished")));
+	//if (!SimpleTemplate->Compile())
+	//{		
+	//	for (auto& CompileError : SimpleTemplate->LastErrors)
+	//	{
+	//		TemplateOutput->SetText(CompileError);
+	//		break;
+	//	}
+	//}
 }
 
 void FSimpleTemplateEditorToolkit::ActionExport()

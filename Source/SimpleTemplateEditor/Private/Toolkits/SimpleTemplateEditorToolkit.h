@@ -6,11 +6,13 @@
 #include "Templates/SharedPointer.h"
 #include "Toolkits/AssetEditorToolkit.h"
 #include "UObject/GCObject.h"
+#include "SSimpleTemplateEditor.h"
 
 class FSpawnTabArgs;
 class ISlateStyle;
 class IToolkitHost;
 class SDockTab;
+class SSimpleTemplateEditor;
 class USimpleTemplate;
 
 
@@ -89,6 +91,13 @@ private:
 	void ActionCompile();
 	void ActionExport();
 	void ActionImport();
+
+public:
+	/** The editor tab */
+	TSharedRef<SWidget> TemplateEditor;
+
+	/** The output tab */
+	TSharedRef<SWidget> TemplateOutput;
 
 private:
 

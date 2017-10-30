@@ -52,6 +52,14 @@ void SSimpleTemplateEditor::Construct(const FArguments& InArgs, USimpleTemplate*
 }
 
 
+void SSimpleTemplateEditor::GoTo(int32 LineNumber, int32 ColumnNumber)
+{
+	FTextLocation Location(LineNumber, ColumnNumber);
+	EditableTextBox->GoTo(Location);
+	EditableTextBox->ScrollTo(Location);
+}
+
+
 /* SSimpleTemplateEditor callbacks
  *****************************************************************************/
 
