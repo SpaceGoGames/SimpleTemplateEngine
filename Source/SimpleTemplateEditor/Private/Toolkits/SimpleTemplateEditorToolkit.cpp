@@ -12,6 +12,12 @@
 #include "Framework/MultiBox/MultiBoxExtender.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 
+#include "Framework/Application/SlateApplication.h"
+#include "DesktopPlatformModule.h"
+#include "Misc/Paths.h"
+#include "Misc/FileHelper.h"
+#include "EditorDirectories.h"
+
 #define LOCTEXT_NAMESPACE "FSimpleTemplateEditorToolkit"
 
 DEFINE_LOG_CATEGORY_STATIC(LogSimpleTemplateEditor, Log, All);
@@ -51,6 +57,9 @@ FSimpleTemplateEditorToolkit::~FSimpleTemplateEditorToolkit()
 
 void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate, const EToolkitMode::Type InMode, const TSharedPtr<class IToolkitHost>& InToolkitHost)
 {
+	FSimpleTemplateEditorCommands::Register();
+	BindCommands();
+
 	SimpleTemplate = InSimpleTemplate;
 
 	// Support undo/redo
@@ -250,6 +259,8 @@ void FSimpleTemplateEditorToolkit::ExtendToolbar()
 			ToolbarBuilder.BeginSection("Command");
 			{
 				ToolbarBuilder.AddToolBarButton(FSimpleTemplateEditorCommands::Get().Compile);
+				ToolbarBuilder.AddToolBarButton(FSimpleTemplateEditorCommands::Get().Export);
+				ToolbarBuilder.AddToolBarButton(FSimpleTemplateEditorCommands::Get().Import);
 			}
 			ToolbarBuilder.EndSection();
 		}
@@ -273,6 +284,64 @@ void FSimpleTemplateEditorToolkit::ExtendToolbar()
 void FSimpleTemplateEditorToolkit::ActionCompile()
 {
 	SimpleTemplate->Compile();
+}
+
+void FSimpleTemplateEditorToolkit::ActionExport()
+{
+	TArray<FString> SaveFilenames;
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+	bool bSaved = false;
+	if (DesktopPlatform != nullptr)
+	{
+		bSaved = DesktopPlatform->SaveFileDialog(
+			FSlateApplication::Get().FindBestParentWindowHandleForDialogs(nullptr),
+			LOCTEXT("ExportDialogTitle", "Export template to file").ToString(),
+			*(FEditorDirectories::Get().GetLastDirectory(ELastDirectory::GENERIC_EXPORT)),
+			TEXT(""),
+			TEXT("Simple Template File|*.stf"),
+			EFileDialogFlags::None,
+			SaveFilenames);
+	}
+
+	if (bSaved)
+	{
+		FString FileName = SaveFilenames[0];
+		FEditorDirectories::Get().SetLastDirectory(ELastDirectory::GENERIC_EXPORT, FPaths::GetPath(FileName)); // Save path as default for next time.
+		FFileHelper::SaveStringToFile(SimpleTemplate->Template.ToString(), *FileName, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+	}
+}
+
+void FSimpleTemplateEditorToolkit::ActionImport()
+{
+	TArray<FString> OpenFilenames;
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+	bool bOpened = false;
+	if (DesktopPlatform != nullptr)
+	{
+		const FString DefaultBrowsePath = FString::Printf(TEXT("%slogs/"), *FPaths::GameSavedDir());
+
+		bOpened = DesktopPlatform->OpenFileDialog(
+			FSlateApplication::Get().FindBestParentWindowHandleForDialogs(nullptr),
+			LOCTEXT("OpenProjectBrowseTitle", "Open Project").ToString(),
+			FEditorDirectories::Get().GetLastDirectory(ELastDirectory::GENERIC_OPEN),
+			TEXT(""),
+			TEXT("Simple Template File|*.stf"),
+			EFileDialogFlags::None,
+			OpenFilenames
+		);
+	}
+
+	if (bOpened)
+	{
+		FString FileName = OpenFilenames[0];
+		FString FileContent;
+		if (FFileHelper::LoadFileToString(FileContent, *FileName))
+		{
+			SimpleTemplate->Template = FText::FromString(FileContent);
+			SimpleTemplate->PostEditChange();
+			SimpleTemplate->MarkPackageDirty();
+		}		
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

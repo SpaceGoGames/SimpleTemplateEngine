@@ -87,6 +87,9 @@ private:
 
 	// Editor actions
 	void ActionCompile();
+	void ActionExport();
+	void ActionImport();
+
 private:
 
 	/** The Simple Template being edited. */
