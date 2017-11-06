@@ -15,7 +15,6 @@ class SDockTab;
 class SSimpleTemplateEditor;
 class USimpleTemplate;
 
-
 /**
  * Implements an Editor toolkit for textures.
  */
@@ -93,11 +92,10 @@ private:
 	void ActionImport();
 
 public:
-	/** The editor tab */
-	TSharedRef<SWidget> TemplateEditor;
 
-	/** The output tab */
-	TSharedRef<SWidget> TemplateOutput;
+	// Editor elements
+	TSharedPtr<SSimpleTemplateEditor> TemplateEditor;
+	TSharedPtr<STextBlock> TemplateOutput;
 
 private:
 

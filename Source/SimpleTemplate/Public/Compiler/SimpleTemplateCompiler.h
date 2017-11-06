@@ -278,13 +278,13 @@ public:
 		return ErrorMessage;
 	}
 
-	bool Tokenize()
+	bool Compile()
 	{
 		if (bHasTokens)
 		{
 			return true;
 		}
-		bHasTokens = TokenizeWorker();
+		bHasTokens = CompileWorker();
 		return bHasTokens;
 	}
 
@@ -324,7 +324,7 @@ protected:
 
 private:
 
-	bool TokenizeWorker()
+	bool CompileWorker()
 	{
 		if (bHasTokens)
 		{

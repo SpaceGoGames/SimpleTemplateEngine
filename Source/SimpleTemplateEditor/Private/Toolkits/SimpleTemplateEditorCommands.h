@@ -14,7 +14,7 @@ public:
 			TEXT("SimpleTemplateEditor"), // Context name for fast lookup
 			NSLOCTEXT("Contexts", "SimpleTemplateEditor", "SimpleTemplate Editor"), // Localized context name for displaying
 			NAME_None, // Parent
-			FSimpleTemplateEditorStyle::GetName()
+			FSimpleTemplateStyle::GetStyleSetName()
 			)
 	{
 	}

@@ -67,7 +67,7 @@ bool USimpleTemplate::Compile()
 {
 	LastErrors.Empty();
 	auto compiler = TTemplateCompilerFactory<TCHAR>::Create(Template.ToString());
-	if (compiler->Tokenize())
+	if (compiler->Compile())
 	{
 		Tokens.Empty();
 		FTokenArray compiledTokens = compiler->GetTokens();

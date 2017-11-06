@@ -56,7 +56,6 @@ FSimpleTemplateEditorToolkit::~FSimpleTemplateEditorToolkit()
 
 void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate, const EToolkitMode::Type InMode, const TSharedPtr<class IToolkitHost>& InToolkitHost)
 {
-	FSimpleTemplateEditorCommands::Register();
 	BindCommands();
 
 	SimpleTemplate = InSimpleTemplate;
@@ -213,20 +212,43 @@ void FSimpleTemplateEditorToolkit::PostRedo(bool bSuccess)
 
 TSharedRef<SDockTab> FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab(const FSpawnTabArgs& Args, FName TabIdentifier)
 {
-	TSharedPtr<SWidget> TabWidget = SNullWidget::NullWidget;
-
 	if (TabIdentifier == SimpleTemplateEditor::TabId)
 	{
-		TabWidget = SNew(SSimpleTemplateEditor, SimpleTemplate, Style);
-		TemplateEditor = StaticCastSharedRef<SWidget>(TabWidget.ToSharedRef());
+		SAssignNew(TemplateEditor, SSimpleTemplateEditor, SimpleTemplate, Style);
+
+		return SNew(SDockTab)
+			.TabRole(ETabRole::PanelTab)
+			[
+				TemplateEditor.ToSharedRef()
+			];
 	}
 	else if (TabIdentifier == SimpleTemplateEditor::OutputTabId)
 	{
-		TabWidget = SNew(STextBlock)
-			.Text(LOCTEXT("NotImplemented", "Compile tab not implemented"));
-		TemplateOutput = StaticCastSharedRef<SWidget>(TabWidget.ToSharedRef());
+		FString ErrorText;
+
+		if (SimpleTemplate->LastErrors.Num() > 0)
+		{
+			ErrorText.Append(LOCTEXT("CompileFailed", "Failed to compile template!").ToString());
+			ErrorText.Newline();
+			for (auto& CompileError : SimpleTemplate->LastErrors)
+			{
+				ErrorText.Append(CompileError);
+				ErrorText.Newline();
+			}
+		}
+
+		SAssignNew(TemplateOutput, STextBlock)
+			.Text(ErrorText.Len() > 0 ? FText::FromString(ErrorText) : LOCTEXT("CompileHint", "Compile template"));
+
+		return SNew(SDockTab)
+			.TabRole(ETabRole::PanelTab)
+			[
+				TemplateOutput.ToSharedRef()
+			];
 	}
 
+	// Just an empty tab
+	TSharedPtr<SWidget> TabWidget = SNullWidget::NullWidget;
 	return SNew(SDockTab)
 		.TabRole(ETabRole::PanelTab)
 		[
@@ -245,6 +267,10 @@ void FSimpleTemplateEditorToolkit::BindCommands()
 
 	UICommandList->MapAction(Commands.Compile,
 		FExecuteAction::CreateSP(this, &FSimpleTemplateEditorToolkit::ActionCompile));
+	UICommandList->MapAction(Commands.Export,
+		FExecuteAction::CreateSP(this, &FSimpleTemplateEditorToolkit::ActionExport));
+	UICommandList->MapAction(Commands.Import,
+		FExecuteAction::CreateSP(this, &FSimpleTemplateEditorToolkit::ActionImport));
 }
 
 void FSimpleTemplateEditorToolkit::ExtendMenu()
@@ -277,22 +303,23 @@ void FSimpleTemplateEditorToolkit::ExtendToolbar()
 	);
 
 	AddToolbarExtender(ToolbarExtender);
-
-	//IPaper2DEditorModule* Paper2DEditorModule = &FModuleManager::LoadModuleChecked<IPaper2DEditorModule>("Paper2DEditor");
-	//AddToolbarExtender(Paper2DEditorModule->GetFlipbookEditorToolBarExtensibilityManager()->GetAllExtenders());
 }
 
 void FSimpleTemplateEditorToolkit::ActionCompile()
 {
-	//TemplateOutput->SetText(FString(TEXT("Compile finished")));
-	//if (!SimpleTemplate->Compile())
-	//{		
-	//	for (auto& CompileError : SimpleTemplate->LastErrors)
-	//	{
-	//		TemplateOutput->SetText(CompileError);
-	//		break;
-	//	}
-	//}
+	TemplateOutput->SetText(LOCTEXT("CompileSuccessful", "Template compiled successfully"));
+	if (!SimpleTemplate->Compile())
+	{
+		FString ErrorText;
+		ErrorText.Append(LOCTEXT("CompileFailed", "Failed to compile template!").ToString());
+		ErrorText.Newline();
+		for (auto& CompileError : SimpleTemplate->LastErrors)
+		{
+			ErrorText.Append(CompileError);
+			ErrorText.Newline();
+		}
+		TemplateOutput->SetText(ErrorText);
+	}
 }
 
 void FSimpleTemplateEditorToolkit::ActionExport()

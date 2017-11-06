@@ -11,6 +11,7 @@
 #include "AssetTools/SimpleTemplateActions.h"
 #include "Styles/SimpleTemplateEditorStyle.h"
 #include "SimpleTemplateEditorSettings.h"
+#include "SimpleTemplateEditorCommands.h"
 
 
 #define LOCTEXT_NAMESPACE "FSimpleTemplateEditorModule"
@@ -48,7 +49,10 @@ public:
 
 	virtual void StartupModule() override
 	{
-//		FSimpleTemplateEditorCommands::Register();
+		FSimpleTemplateEditorCommands::Register();
+
+		// Register slate style overrides
+		FSimpleTemplateStyle::Initialize();
 
 		RegisterAssetTools();
 		RegisterMenuExtensions();
@@ -60,6 +64,9 @@ public:
 		UnregisterAssetTools();
 		UnregisterMenuExtensions();
 		UnregisterSettings();
+
+		// Unregister slate style overrides
+		FSimpleTemplateStyle::Shutdown();
 	}
 
 	virtual bool SupportsDynamicReloading() override
@@ -74,7 +81,7 @@ protected:
 	{
 		IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
 
-		RegisterAssetTypeAction(AssetTools, MakeShareable(new FSimpleTemplateActions(FSimpleTemplateEditorStyle::Get().ToSharedRef())));
+		RegisterAssetTypeAction(AssetTools, MakeShareable(new FSimpleTemplateActions(FSimpleTemplateStyle::Get().ToSharedRef())));
 	}
 
 	/**
