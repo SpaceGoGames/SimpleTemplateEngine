@@ -172,6 +172,21 @@ FName FSimpleTemplateEditorToolkit::GetToolkitFName() const
 	return FName("SimpleTemplateEditor");
 }
 
+FText FSimpleTemplateEditorToolkit::GetToolkitName() const
+{
+	if (SimpleTemplate != nullptr)
+	{
+		const bool bDirtyState = SimpleTemplate->GetOutermost()->IsDirty();
+
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("DirtyState"), bDirtyState ? FText::FromString(TEXT("*")) : FText::GetEmpty());
+
+		Args.Add(TEXT("TemplateName"), FText::FromString(SimpleTemplate->GetName()));
+		return FText::Format(LOCTEXT("EditorTitle", "{TemplateName}{DirtyState}"), Args);
+	}
+	return FText::GetEmpty();
+}
+
 
 FLinearColor FSimpleTemplateEditorToolkit::GetWorldCentricTabColorScale() const
 {

@@ -75,9 +75,15 @@ bool USimpleTemplate::Compile()
 		{
 			Tokens.Add(Token);
 		}
+		Status = ETemplateStatus::TS_UpToDate;
+		PostEditChange();
+		MarkPackageDirty();
 		return true;
 	}
 	LastErrors.Add(compiler->GetLastError());
+	Status = ETemplateStatus::TS_Error;
+	PostEditChange();
+	MarkPackageDirty();
 	return false;
 }
 #endif

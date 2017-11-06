@@ -10,6 +10,24 @@
 
 #include "SimpleTemplate.generated.h"
 
+/**
+* Enumerates states a template can be in.
+*/
+UENUM()
+enum class ETemplateStatus : uint8
+{
+	/** Template is in an unknown state. */
+	TS_Unknown,
+	/** Template has been modified but not recompiled. */
+	TS_Dirty,
+	/** Template tried but failed to be compiled. */
+	TS_Error,
+	/** Template has been compiled since it was last modified. */
+	TS_UpToDate,
+	/** Template is in the process of being created for the first time. */
+	TS_BeingCreated
+};
+
 
 /**
  * Implements an asset that can be used to store arbitrary text, such as notes
@@ -32,11 +50,27 @@ public:
 	UPROPERTY()
 	TArray<FString> LastErrors;
 
-	// A dirty template needs to be compiled
+	/** The current status of this blueprint */
 	UPROPERTY()
-	uint32 bDirty : 1;
+	ETemplateStatus Status;
 
 	bool Compile();
+
+	bool IsUpToDate() const
+	{
+		return ETemplateStatus::TS_UpToDate == Status;
+	}
+
+	bool IsPossiblyDirty() const
+	{
+		return (ETemplateStatus::TS_Dirty == Status) || (ETemplateStatus::TS_Unknown == Status);
+	}
+
+	bool IsError() const
+	{
+		return (ETemplateStatus::TS_Error == Status);
+	}
+
 #endif
 
 	// UObject interface
@@ -55,6 +89,11 @@ private:
 			return true;
 		}
 		LastErrors.Add(buildError);
+#if WITH_EDITOR
+		Status = ETemplateStatus::TS_Error;
+		PostEditChange();
+		MarkPackageDirty();
+#endif
 		return false;
 	}
 };

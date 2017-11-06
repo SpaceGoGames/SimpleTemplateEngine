@@ -60,6 +60,7 @@ public:
 
 	virtual FText GetBaseToolkitName() const override;
 	virtual FName GetToolkitFName() const override;
+	virtual FText GetToolkitName() const override;
 	virtual FLinearColor GetWorldCentricTabColorScale() const override;
 	virtual FString GetWorldCentricTabPrefix() const override;
 
