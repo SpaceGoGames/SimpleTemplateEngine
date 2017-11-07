@@ -30,8 +30,7 @@ enum class ETemplateStatus : uint8
 
 
 /**
- * Implements an asset that can be used to store arbitrary text, such as notes
- * or documentation.
+ * Asset used to implement complex template replace logic.
  */
 UCLASS(BlueprintType, hidecategories=(Object))
 class SIMPLETEMPLATE_API USimpleTemplate

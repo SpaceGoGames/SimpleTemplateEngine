@@ -75,6 +75,7 @@ void SSimpleTemplateEditor::HandleEditableTextBoxTextChanged(const FText& NewTex
 	}
 }
 
+	
 
 void SSimpleTemplateEditor::HandleEditableTextBoxTextCommitted(const FText& Comment, ETextCommit::Type CommitType)
 {
