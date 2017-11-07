@@ -50,7 +50,13 @@ public:
 	UPROPERTY()
 	TArray<FString> LastErrors;
 
-	/** The current status of this blueprint */
+	// Line and chars used to goto in case of an error
+	UPROPERTY()
+	uint32 LineNumber;
+	UPROPERTY()
+	uint32 CharacterNumber;
+
+	/** The current status of this template */
 	UPROPERTY()
 	ETemplateStatus Status;
 
@@ -70,6 +76,8 @@ public:
 	{
 		return (ETemplateStatus::TS_Error == Status);
 	}
+
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
 #endif
 

@@ -278,6 +278,16 @@ public:
 		return ErrorMessage;
 	}
 
+	uint32 GetLineNumber()
+	{
+		return LineNumber;
+	}
+
+	uint32 GetCharNumber()
+	{
+		return CharNumber;
+	}
+
 	bool Compile()
 	{
 		if (bHasTokens)
@@ -450,7 +460,7 @@ private:
 				}
 				else
 				{
-					SetError(TEXT("Missing end token after a control token"));
+					SetError(TEXT("Missing '}'"));
 					return false;
 				}
 			}
@@ -505,7 +515,7 @@ private:
 		ReadStream->Serialize(&Char, sizeof(CharType));
 		++CharNumber;
 		bool readNext = !IsEOF(Char);
-		if (readNext)
+		if (readNext && IsLineBreak(Char))
 		{
 			++LineNumber;
 			CharNumber = 0;

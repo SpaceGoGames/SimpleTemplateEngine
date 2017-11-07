@@ -28,6 +28,7 @@ UObject* USimpleTemplateFactory::FactoryCreateFile(UClass* InClass, UObject* InP
 	{
 		SimpleTemplate = NewObject<USimpleTemplate>(InParent, InClass, InName, Flags);
 		SimpleTemplate->Template = FText::FromString(TextString);
+		SimpleTemplate->Status = ETemplateStatus::TS_BeingCreated;
 	}
 
 	bOutOperationCanceled = false;

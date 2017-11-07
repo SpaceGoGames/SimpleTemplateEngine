@@ -253,7 +253,9 @@ TSharedRef<SDockTab> FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab(cons
 		}
 
 		SAssignNew(TemplateOutput, STextBlock)
-			.Text(ErrorText.Len() > 0 ? FText::FromString(ErrorText) : LOCTEXT("CompileHint", "Compile template"));
+			.Text(ErrorText.Len() > 0 ? FText::FromString(ErrorText) : LOCTEXT("CompileHint", "Compile template"))
+			.ToolTipText(LOCTEXT("OutputTabToolTip", "Compile result, double click to highlight error in editor."))
+			.OnDoubleClicked(this, &FSimpleTemplateEditorToolkit::GoToError);
 
 		return SNew(SDockTab)
 			.TabRole(ETabRole::PanelTab)
@@ -292,32 +294,65 @@ void FSimpleTemplateEditorToolkit::ExtendMenu()
 {
 }
 
+void FSimpleTemplateEditorToolkit::FillTemplateToolbar(FToolBarBuilder& ToolbarBuilder)
+{
+	ToolbarBuilder.BeginSection("Command");
+	{
+		const FSimpleTemplateEditorCommands& Commands = FSimpleTemplateEditorCommands::Get();
+		ToolbarBuilder.AddToolBarButton(Commands.Compile,
+			NAME_None,
+			TAttribute<FText>(),
+			TAttribute<FText>(this, &FSimpleTemplateEditorToolkit::GetStatusTooltip),
+			TAttribute<FSlateIcon>(this, &FSimpleTemplateEditorToolkit::GetStatusImage),
+			FName(TEXT("Compile")));
+		ToolbarBuilder.AddToolBarButton(Commands.Export);
+		ToolbarBuilder.AddToolBarButton(Commands.Import);
+	}
+	ToolbarBuilder.EndSection();
+}
+
 void FSimpleTemplateEditorToolkit::ExtendToolbar()
 {
-	struct Local
-	{
-		static void FillToolbar(FToolBarBuilder& ToolbarBuilder)
-		{
-			ToolbarBuilder.BeginSection("Command");
-			{
-				ToolbarBuilder.AddToolBarButton(FSimpleTemplateEditorCommands::Get().Compile);
-				ToolbarBuilder.AddToolBarButton(FSimpleTemplateEditorCommands::Get().Export);
-				ToolbarBuilder.AddToolBarButton(FSimpleTemplateEditorCommands::Get().Import);
-			}
-			ToolbarBuilder.EndSection();
-		}
-	};
 
 	TSharedPtr<FExtender> ToolbarExtender = MakeShareable(new FExtender);
-
 	ToolbarExtender->AddToolBarExtension(
 		"Asset",
 		EExtensionHook::After,
 		GetToolkitCommands(),
-		FToolBarExtensionDelegate::CreateStatic(&Local::FillToolbar)
+		FToolBarExtensionDelegate::CreateSP(this, &FSimpleTemplateEditorToolkit::FillTemplateToolbar)
 	);
 
 	AddToolbarExtender(ToolbarExtender);
+}
+
+FSlateIcon FSimpleTemplateEditorToolkit::GetStatusImage() const
+{
+	ETemplateStatus Status = SimpleTemplate->Status;
+	switch (Status)
+	{
+	case ETemplateStatus::TS_Error:
+		return FSlateIcon(FSimpleTemplateStyle::GetStyleSetName(), "SimpleTemplateEditor.Compile.Error");
+	case ETemplateStatus::TS_UpToDate:
+		return FSlateIcon(FSimpleTemplateStyle::GetStyleSetName(), "SimpleTemplateEditor.Compile");
+	}
+	return FSlateIcon(FSimpleTemplateStyle::GetStyleSetName(), "SimpleTemplateEditor.Compile.Dirty");
+}
+
+FText FSimpleTemplateEditorToolkit::GetStatusTooltip() const
+{
+	ETemplateStatus Status = SimpleTemplate->Status;
+	switch (Status)
+	{
+	case ETemplateStatus::TS_Unknown:
+		return LOCTEXT("Recompile_Status", "Unknown status; should recompile");
+	case ETemplateStatus::TS_BeingCreated:
+		return LOCTEXT("Created_Status", "You have to compile the template for the first time");
+	case ETemplateStatus::TS_Dirty:
+		return LOCTEXT("Dirty_Status", "Dirty; needs to be recompiled");
+	case ETemplateStatus::TS_Error:
+		return LOCTEXT("CompileError_Status", "There was an error during compilation, see the log for details");
+	}
+	return LOCTEXT("GoodToGo_Status", "Good to go");
 }
 
 void FSimpleTemplateEditorToolkit::ActionCompile()
@@ -393,6 +428,12 @@ void FSimpleTemplateEditorToolkit::ActionImport()
 			SimpleTemplate->MarkPackageDirty();
 		}		
 	}
+}
+
+FReply FSimpleTemplateEditorToolkit::GoToError()
+{
+	TemplateEditor->GoTo(SimpleTemplate->LineNumber, SimpleTemplate->CharacterNumber);
+	return FReply::Handled();
 }
 
 #undef LOCTEXT_NAMESPACE

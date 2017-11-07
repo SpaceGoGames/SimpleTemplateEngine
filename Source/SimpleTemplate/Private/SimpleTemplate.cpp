@@ -63,8 +63,21 @@ void USimpleTemplate::Serialize(FArchive& Ar)
 }
 
 #if WITH_EDITOR
+
+void USimpleTemplate::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	const FName PropertyName = (PropertyChangedEvent.Property ? PropertyChangedEvent.Property->GetFName() : NAME_None);
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(USimpleTemplate, Template))
+	{
+		Status = ETemplateStatus::TS_Dirty;
+	}
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+}
+
 bool USimpleTemplate::Compile()
 {
+	LineNumber = 0;
+	CharacterNumber = 0;
 	LastErrors.Empty();
 	auto compiler = TTemplateCompilerFactory<TCHAR>::Create(Template.ToString());
 	if (compiler->Compile())
@@ -80,10 +93,13 @@ bool USimpleTemplate::Compile()
 		MarkPackageDirty();
 		return true;
 	}
+	LineNumber = compiler->GetLineNumber();
+	CharacterNumber = compiler->GetCharNumber();
 	LastErrors.Add(compiler->GetLastError());
 	Status = ETemplateStatus::TS_Error;
 	PostEditChange();
 	MarkPackageDirty();
 	return false;
 }
+
 #endif

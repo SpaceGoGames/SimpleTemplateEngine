@@ -87,10 +87,19 @@ private:
 	/** Callback for spawning the Properties tab. */
 	TSharedRef<SDockTab> HandleTabManagerSpawnTab(const FSpawnTabArgs& Args, FName TabIdentifier);
 
+	void FillTemplateToolbar(FToolBarBuilder& ToolbarBuilder);
+
 	// Editor actions
 	void ActionCompile();
 	void ActionExport();
 	void ActionImport();
+
+	// Used to navigate to the current error
+	FReply GoToError();
+
+	// Compile action customization
+	FSlateIcon GetStatusImage() const;
+	FText GetStatusTooltip() const;
 
 public:
 

@@ -22,7 +22,9 @@ USimpleTemplateFactoryNew::USimpleTemplateFactoryNew(const FObjectInitializer& O
 
 UObject* USimpleTemplateFactoryNew::FactoryCreateNew(UClass* InClass, UObject* InParent, FName InName, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
 {
-	return NewObject<USimpleTemplate>(InParent, InClass, InName, Flags);
+	USimpleTemplate* SimpleTemplate = NewObject<USimpleTemplate>(InParent, InClass, InName, Flags);
+	SimpleTemplate->Status = ETemplateStatus::TS_BeingCreated;
+	return SimpleTemplate;
 }
 
 

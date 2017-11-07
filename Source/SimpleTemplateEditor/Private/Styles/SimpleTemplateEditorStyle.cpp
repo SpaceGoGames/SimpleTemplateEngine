@@ -25,8 +25,8 @@ TSharedPtr< class ISlateStyle > FSimpleTemplateStyle::Get() { return StyleSet; }
 
 FName FSimpleTemplateStyle::GetStyleSetName()
 {
-	static FName PaperStyleName(TEXT("SimpleTemplateStyle"));
-	return PaperStyleName;
+	static FName SimpleTemplateStyleName(TEXT("SimpleTemplateStyle"));
+	return SimpleTemplateStyleName;
 }
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
@@ -52,6 +52,8 @@ void FSimpleTemplateStyle::Initialize()
 	// Template editor
 	{
 		StyleSet->Set("SimpleTemplateEditor.Compile", new IMAGE_PLUGIN_BRUSH("Icons/icon_compile_40x", Icon40x40));
+		StyleSet->Set("SimpleTemplateEditor.Compile.Dirty", new IMAGE_PLUGIN_BRUSH("Icons/icon_compile_dirty_40x", Icon40x40));
+		StyleSet->Set("SimpleTemplateEditor.Compile.Error", new IMAGE_PLUGIN_BRUSH("Icons/icon_compile_error_40x", Icon40x40));
 		StyleSet->Set("SimpleTemplateEditor.Export", new IMAGE_PLUGIN_BRUSH("Icons/icon_export_40x", Icon40x40));
 		StyleSet->Set("SimpleTemplateEditor.Import", new IMAGE_PLUGIN_BRUSH("Icons/icon_import_40x", Icon40x40));
 	}

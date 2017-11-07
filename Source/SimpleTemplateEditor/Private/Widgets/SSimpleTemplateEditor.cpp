@@ -57,6 +57,7 @@ void SSimpleTemplateEditor::GoTo(int32 LineNumber, int32 ColumnNumber)
 	FTextLocation Location(LineNumber, ColumnNumber);
 	EditableTextBox->GoTo(Location);
 	EditableTextBox->ScrollTo(Location);
+	FSlateApplication::Get().SetKeyboardFocus(EditableTextBox.ToSharedRef());
 }
 
 
@@ -65,13 +66,25 @@ void SSimpleTemplateEditor::GoTo(int32 LineNumber, int32 ColumnNumber)
 
 void SSimpleTemplateEditor::HandleEditableTextBoxTextChanged(const FText& NewText)
 {
-	SimpleTemplate->MarkPackageDirty();
+	FText newText = EditableTextBox->GetText();
+	if (!newText.EqualTo(SimpleTemplate->Template))
+	{
+		SimpleTemplate->Template = newText;
+		SimpleTemplate->Status = ETemplateStatus::TS_Dirty;
+		SimpleTemplate->MarkPackageDirty();
+	}
 }
 
 
 void SSimpleTemplateEditor::HandleEditableTextBoxTextCommitted(const FText& Comment, ETextCommit::Type CommitType)
 {
-	SimpleTemplate->Template = EditableTextBox->GetText();
+	FText newText = EditableTextBox->GetText();
+	if (!newText.EqualTo(SimpleTemplate->Template))
+	{
+		SimpleTemplate->Template = newText;
+		SimpleTemplate->Status = ETemplateStatus::TS_Dirty;
+		SimpleTemplate->MarkPackageDirty();
+	}
 }
 
 
