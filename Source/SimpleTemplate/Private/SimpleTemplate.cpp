@@ -27,29 +27,32 @@ void USimpleTemplate::Serialize(FArchive& Ar)
 			--NumTokens;
 			ETokenType TokenType;
 			Ar << TokenType;
+
+			FToken* token = nullptr;
 			switch (TokenType)
 			{
 			case ETokenType::Text:
-				AddToken(new FTokenText(Ar));
+				token = new FTokenText();
 				break;
 			case ETokenType::Var:
-				AddToken(new FTokenVar(Ar));
+				token = new FTokenVar();
 				break;
 			case ETokenType::If:
-				AddToken(new FTokenIf(Ar));
+				token = new FTokenIf();
 				break;
 			case ETokenType::For:
-				AddToken(new FTokenFor(Ar));
+				token = new FTokenFor();
 				break;
 			case ETokenType::EndIf:
-				AddToken(new FTokenEndIf(Ar));
+				token = new FTokenEndIf();
 				break;
 			case ETokenType::EndFor:
-				AddToken(new FTokenEndFor(Ar));
-				break;
-			default:
+				token = new FTokenEndFor();
 				break;
 			}
+
+			token->Serialize(Ar);
+			AddToken(token);
 		}
 	}
 	else if (Ar.IsSaving())

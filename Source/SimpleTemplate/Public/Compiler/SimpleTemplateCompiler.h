@@ -48,11 +48,6 @@ class SIMPLETEMPLATE_API FToken : public IToken
 public:
 	FToken() {}
 
-	FToken(FArchive& Ar)
-	{
-		Serialize(Ar);
-	}
-
     virtual ~FToken() {}
 
 	virtual ETokenType GetType() const
@@ -76,7 +71,7 @@ typedef TArray<FTokenPtr> FTokenArray;
 class SIMPLETEMPLATE_API FTokenText : public FToken
 {
 public:
-	FTokenText(FArchive& Ar) : FToken(Ar) {}
+	FTokenText() : FToken() {}
 
 #if WITH_EDITOR
     FTokenText(const FString& InText)
@@ -102,7 +97,7 @@ public:
 class SIMPLETEMPLATE_API FTokenVar : public FToken
 {
 public:
-	FTokenVar(FArchive& Ar) : FToken(Ar) {}
+	FTokenVar() : FToken() {}
 
 #if WITH_EDITOR
 	FTokenVar(const FString& InKey)
@@ -133,7 +128,7 @@ public:
 class SIMPLETEMPLATE_API FTokenNested : public FToken
 {
 public:
-	FTokenNested(FArchive& Ar) : FToken(Ar) {}
+	FTokenNested() : FToken() {}
 
 #if WITH_EDITOR
 	FTokenNested(const FString& InExpression)
@@ -157,7 +152,7 @@ public:
 class SIMPLETEMPLATE_API FTokenFor : public FTokenNested
 {
 public:
-	FTokenFor(FArchive& Ar) : FTokenNested(Ar) {}
+	FTokenFor() : FTokenNested() {}
 
 #if WITH_EDITOR
 	FTokenFor(const FString& Expresion)
@@ -169,11 +164,11 @@ public:
 	{
 		TArray<FString> ForValues;
 		Expression.ParseIntoArray(ForValues, TEXT(" "));
-		if (ForValues.Num() != 4)
+		// Expresion must be: for key in value
+		if (ForValues.Num() != 4 || !ForValues[2].Equals("in"))
 		{
 			return FString::Printf(TEXT("'for' token must in form of: for key in value. '%s' found instead"), *Expression);
 		}
-
 		Key = ForValues[1];
 		Value = ForValues[3];
 		return FString();
@@ -200,7 +195,7 @@ public:
 class SIMPLETEMPLATE_API FTokenIf : public FTokenNested
 {
 public:
-	FTokenIf(FArchive& Ar) : FTokenNested(Ar) {}
+	FTokenIf() : FTokenNested() {}
 
 #if WITH_EDITOR
 	FTokenIf(const FString& Expresion)
@@ -216,7 +211,7 @@ public:
 
 		if (IfValues.Num() < 2)
 		{
-			return FString::Printf(TEXT("'if' token is not a boolean operation^. '{%s}' found instead."), *Expression);
+			return FString::Printf(TEXT("'if' token is not a boolean operation. '{%s}' found instead."), *Expression);
 		}
 
 		// if not var
@@ -282,7 +277,7 @@ public:
 class SIMPLETEMPLATE_API FTokenEndIf : public FTokenNested
 {
 public:
-	FTokenEndIf(FArchive& Ar) : FTokenNested(Ar) {}
+	FTokenEndIf() : FTokenNested() {}
 
 #if WITH_EDITOR
 	FTokenEndIf(const FString& Expresion)
@@ -308,7 +303,7 @@ public:
 class SIMPLETEMPLATE_API FTokenEndFor : public FTokenNested
 {
 public:
-	FTokenEndFor(FArchive& Ar) : FTokenNested(Ar) {}
+	FTokenEndFor() : FTokenNested() {}
 
 #if WITH_EDITOR
 	FTokenEndFor(const FString& Expresion)
