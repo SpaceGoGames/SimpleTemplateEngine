@@ -36,12 +36,22 @@ enum class ETokenType : uint8
     EndFor
 };
 
-class SIMPLETEMPLATE_API FToken
+class SIMPLETEMPLATE_API IToken
 {
 public:
-	FToken(const FString& InExpression)
-		: Expression(InExpression)
-	{ }
+	virtual ETokenType GetType() const = 0;
+	virtual void Serialize(FArchive& Ar) = 0;
+};
+
+class SIMPLETEMPLATE_API FToken : public IToken
+{
+public:
+	FToken() {}
+
+	FToken(FArchive& Ar)
+	{
+		Serialize(Ar);
+	}
 
     virtual ~FToken() {}
 
@@ -49,24 +59,15 @@ public:
 	{
 		return ETokenType::None;
 	}
+
+#if WITH_EDITOR
 	virtual FString Build()
 	{
 		return FString();
 	}
-
-	// UObject interface
-	virtual void Serialize(FArchive& Ar)
-	{
-		if (Ar.IsSaving())
-		{
-			ETokenType serializedType = GetType();
-			Ar << serializedType;
-			Ar << Expression;
-		}
-	}
-
-protected:
-	FString Expression;
+#endif
+	
+	virtual void Serialize(FArchive& Ar) {}
 };
 
 typedef TSharedPtr<FToken> FTokenPtr;
@@ -75,48 +76,90 @@ typedef TArray<FTokenPtr> FTokenArray;
 class SIMPLETEMPLATE_API FTokenText : public FToken
 {
 public:
+	FTokenText(FArchive& Ar) : FToken(Ar) {}
+
+#if WITH_EDITOR
     FTokenText(const FString& InText)
-        : FToken(InText) {}
+        : FToken()
+		, Text(InText)
+	{}
+#endif
 
     ETokenType GetType() const override
     {
         return ETokenType::Text;
     }
+
+	virtual void Serialize(FArchive& Ar) override
+	{
+		Ar << Text;
+	}
+
+public:
+	FString Text;
 };
 
 class SIMPLETEMPLATE_API FTokenVar : public FToken
 {
 public:
-    FTokenVar(const FString& InKey)
-        : FToken(InKey) {}
+	FTokenVar(FArchive& Ar) : FToken(Ar) {}
+
+#if WITH_EDITOR
+	FTokenVar(const FString& InKey)
+		: FToken()
+		, Key(InKey)
+	{}
 
 	virtual FString Build() override
 	{
 		return FString();
 	}
+#endif
 
-    ETokenType GetType() const override
-    {
-        return ETokenType::Var;
-    }
+	ETokenType GetType() const override
+	{
+		return ETokenType::Var;
+	}
+
+	virtual void Serialize(FArchive& Ar) override
+	{
+		Ar << Key;
+	}
+
+public:
+	FString Key;
 };
-
 
 class SIMPLETEMPLATE_API FTokenNested : public FToken
 {
-
 public:
+	FTokenNested(FArchive& Ar) : FToken(Ar) {}
+
+#if WITH_EDITOR
 	FTokenNested(const FString& InExpression)
-		: FToken(InExpression) {}
+		: FToken()
+		, Expression(InExpression)
+	{}
+#endif
+
+	virtual void Serialize(FArchive& Ar) override
+	{
+		// Children?
+	}
 
 public:
-    //FString Expression;
+#if WITH_EDITOR
+	FString Expression;
+#endif
 	//FTokenArray Children;
 };
 
 class SIMPLETEMPLATE_API FTokenFor : public FTokenNested
 {
 public:
+	FTokenFor(FArchive& Ar) : FTokenNested(Ar) {}
+
+#if WITH_EDITOR
 	FTokenFor(const FString& Expresion)
 		: FTokenNested(Expresion)
 	{
@@ -135,11 +178,19 @@ public:
 		Value = ForValues[3];
 		return FString();
 	}
+#endif
 
     ETokenType GetType() const override
     {
         return ETokenType::For;
     }
+
+	virtual void Serialize(FArchive& Ar) override
+	{
+		FTokenNested::Serialize(Ar);
+		Ar << Key;
+		Ar << Value;
+	}
 
 public:
 	FString Key;
@@ -149,8 +200,12 @@ public:
 class SIMPLETEMPLATE_API FTokenIf : public FTokenNested
 {
 public:
+	FTokenIf(FArchive& Ar) : FTokenNested(Ar) {}
+
+#if WITH_EDITOR
 	FTokenIf(const FString& Expresion)
 		: FTokenNested(Expresion) {}
+
 
 	virtual FString Build() override
 	{
@@ -193,6 +248,7 @@ public:
 		}
 		return FString();
 	}
+#endif
 
     ETokenType GetType() const override
     {
@@ -202,6 +258,18 @@ public:
 	bool IsTrue()
 	{
 		return false;
+	}
+
+	virtual void Serialize(FArchive& Ar) override
+	{
+		FToken::Serialize(Ar);
+		bool bAux;
+		Ar << bAux;
+		bSign = bAux;
+		Ar << bAux;
+		bIgnoreCase = bAux;
+		Ar << Key;
+		Ar << Value;
 	}
 
 public:
@@ -214,8 +282,12 @@ public:
 class SIMPLETEMPLATE_API FTokenEndIf : public FTokenNested
 {
 public:
+	FTokenEndIf(FArchive& Ar) : FTokenNested(Ar) {}
+
+#if WITH_EDITOR
 	FTokenEndIf(const FString& Expresion)
 		: FTokenNested(Expresion) {}
+
 
 	virtual FString Build() override
 	{
@@ -225,6 +297,7 @@ public:
 		}
 		return FString();
 	}
+#endif
 
 	ETokenType GetType() const override
 	{
@@ -235,6 +308,9 @@ public:
 class SIMPLETEMPLATE_API FTokenEndFor : public FTokenNested
 {
 public:
+	FTokenEndFor(FArchive& Ar) : FTokenNested(Ar) {}
+
+#if WITH_EDITOR
 	FTokenEndFor(const FString& Expresion)
 		: FTokenNested(Expresion) {}
 
@@ -246,6 +322,7 @@ public:
 		}
 		return FString();
 	}
+#endif
 
 	ETokenType GetType() const override
 	{
@@ -491,6 +568,7 @@ private:
 	void SetError(const FString& Error)
 	{
 		ErrorMessage = FString::Printf(TEXT("[ERROR] Line: %u Ch: %u: %s"), LineNumber, CharNumber, *Error);
+		UE_LOG(LogSTE, Error, TEXT("%s"), *ErrorMessage);
 	}
 
 	void ClearError()

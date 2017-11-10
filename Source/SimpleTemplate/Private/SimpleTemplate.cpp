@@ -2,6 +2,8 @@
 
 #include "SimpleTemplate.h"
 
+DEFINE_LOG_CATEGORY(LogSTE);
+
 void USimpleTemplate::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
@@ -11,7 +13,10 @@ void USimpleTemplate::Serialize(FArchive& Ar)
 	{
 		uint32 TemplateVersion;
 		Ar << TemplateVersion;
-		//UE_LOG(LogSTE, Error, TEXT("Serialized template version is incompatible with your current verion!"));
+		if (TemplateVersion <= TPL_VERSION)
+		{
+			UE_LOG(LogSTE, Error, TEXT("Serialized template version is incompatible with your current version!"));
+		}
 		check(TemplateVersion <= TPL_VERSION);
 
 		int32 NumTokens;
@@ -21,29 +26,26 @@ void USimpleTemplate::Serialize(FArchive& Ar)
 		{
 			--NumTokens;
 			ETokenType TokenType;
-			FString TokenExpression;
 			Ar << TokenType;
-			Ar << TokenExpression;
-
 			switch (TokenType)
 			{
 			case ETokenType::Text:
-				AddToken(new FTokenText(TokenExpression), true);
+				AddToken(new FTokenText(Ar));
 				break;
 			case ETokenType::Var:
-				AddToken(new FTokenVar(TokenExpression), true);
+				AddToken(new FTokenVar(Ar));
 				break;
 			case ETokenType::If:
-				AddToken(new FTokenIf(TokenExpression), true);
+				AddToken(new FTokenIf(Ar));
 				break;
 			case ETokenType::For:
-				AddToken(new FTokenFor(TokenExpression), true);
+				AddToken(new FTokenFor(Ar));
 				break;
 			case ETokenType::EndIf:
-				AddToken(new FTokenEndIf(TokenExpression), true);
+				AddToken(new FTokenEndIf(Ar));
 				break;
 			case ETokenType::EndFor:
-				AddToken(new FTokenEndFor(TokenExpression), true);
+				AddToken(new FTokenEndFor(Ar));
 				break;
 			default:
 				break;
@@ -57,6 +59,9 @@ void USimpleTemplate::Serialize(FArchive& Ar)
 		Ar << NumTokens;
 		for (auto Token : Tokens)
 		{
+			// Always add the type first
+			ETokenType serializedType = Token->GetType();
+			Ar << serializedType;
 			Token->Serialize(Ar);
 		}
 	}

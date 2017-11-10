@@ -10,6 +10,8 @@
 
 #include "SimpleTemplate.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogSTE, Verbose, All);
+
 /**
 * Enumerates states a template can be in.
 */
@@ -87,20 +89,8 @@ private:
 	FTokenArray Tokens;
 
 	/** Add a token to our token list */
-	bool AddToken(FToken* token, bool checked = false)
+	void AddToken(FToken* token)
 	{
-		FString buildError = token->Build();
-		if (buildError.IsEmpty())
-		{
-			Tokens.Add(MakeShareable(token));
-			return true;
-		}
-		LastErrors.Add(buildError);
-#if WITH_EDITOR
-		Status = ETemplateStatus::TS_Error;
-		PostEditChange();
-		MarkPackageDirty();
-#endif
-		return false;
+		Tokens.Add(MakeShareable(token));
 	}
 };
