@@ -5,7 +5,7 @@
 #include "Templates/SharedPointer.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SCompoundWidget.h"
-#include "Widgets/Input/SMultiLineEditableTextBox.h"
+#include "SSimpleTemplateEditableText.h"
 
 class FText;
 class ISlateStyle;
@@ -53,8 +53,11 @@ private:
 private:
 
 	/** Holds the editable text box widget. */
-	TSharedPtr<SMultiLineEditableTextBox> EditableTextBox;
+	TSharedPtr<SSimpleTemplateEditableText> EditableTextBox;
 
 	/** Pointer to the Simple Template that is being edited. */
 	USimpleTemplate* SimpleTemplate;
+
+	TSharedPtr<SScrollBar> HorizontalScrollbar;
+	TSharedPtr<SScrollBar> VerticalScrollbar;
 };

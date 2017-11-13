@@ -7,7 +7,11 @@
 #include "SimpleTemplate.h"
 #include "UObject/Class.h"
 #include "Widgets/SBoxPanel.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/Layout/SGridPanel.h"
+#include "Widgets/Layout/SScrollBar.h"
 #include "Widgets/Input/SMultiLineEditableTextBox.h"
+#include "Input/Reply.h"
 
 #include "SimpleTemplateEditorSettings.h"
 
@@ -28,24 +32,43 @@ void SSimpleTemplateEditor::Construct(const FArguments& InArgs, USimpleTemplate*
 {
 	SimpleTemplate = InSimpleTemplate;
 
+	HorizontalScrollbar =
+		SNew(SScrollBar)
+		.Orientation(Orient_Horizontal)
+		.Thickness(FVector2D(10.0f, 10.0f));
+
+	VerticalScrollbar =
+		SNew(SScrollBar)
+		.Orientation(Orient_Vertical)
+		.Thickness(FVector2D(10.0f, 10.0f));
+
 	auto Settings = GetDefault<USimpleTemplateEditorSettings>();
 
 	ChildSlot
 	[
-		SNew(SVerticalBox)
-
-		+ SVerticalBox::Slot()
-			.FillHeight(1.0f)
+		SNew(SBorder)
+		.BorderImage(FSimpleTemplateStyle::Get()->GetBrush("TextEditor.Border"))
+		[
+			SNew(SGridPanel)
+			.FillColumn(0, 1.0f)
+			.FillRow(0, 1.0f)
+			+SGridPanel::Slot(0, 0)
 			[
-				SAssignNew(EditableTextBox, SMultiLineEditableTextBox)
-					.BackgroundColor((Settings != nullptr) ? Settings->BackgroundColor : FLinearColor::White)
-					.Font((Settings != nullptr) ? Settings->Font : FSlateFontInfo())
-					.ForegroundColor((Settings != nullptr) ? Settings->ForegroundColor : FLinearColor::Black)
-					.Margin((Settings != nullptr) ? Settings->Margin : 4.0f)
-					.OnTextChanged(this, &SSimpleTemplateEditor::HandleEditableTextBoxTextChanged)
-					.OnTextCommitted(this, &SSimpleTemplateEditor::HandleEditableTextBoxTextCommitted)
-					.Text(SimpleTemplate->Template)
+				SAssignNew(EditableTextBox, SSimpleTemplateEditableText)
+				.Text(SimpleTemplate->Template)
+				.HScrollBar(HorizontalScrollbar)
+				.VScrollBar(VerticalScrollbar)
+				.OnTextChanged(this, &SSimpleTemplateEditor::HandleEditableTextBoxTextChanged)
 			]
+			+SGridPanel::Slot(1, 0)
+			[
+				VerticalScrollbar.ToSharedRef()
+			]
+			+SGridPanel::Slot(0, 1)
+			[
+				HorizontalScrollbar.ToSharedRef()
+			]
+		]
 	];
 
 	FCoreUObjectDelegates::OnObjectPropertyChanged.AddSP(this, &SSimpleTemplateEditor::HandleSimpleTemplatePropertyChanged);
@@ -96,6 +119,5 @@ void SSimpleTemplateEditor::HandleSimpleTemplatePropertyChanged(UObject* Object,
 		EditableTextBox->SetText(SimpleTemplate->Template);
 	}
 }
-
 
 #undef LOCTEXT_NAMESPACE

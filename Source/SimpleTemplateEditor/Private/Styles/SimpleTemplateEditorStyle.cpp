@@ -63,6 +63,11 @@ void FSimpleTemplateStyle::Initialize()
 		StyleSet->Set("SimpleTemplateEditor.Import", new IMAGE_PLUGIN_BRUSH("Icons/icon_import_40x", Icon40x40));
 	}
 
+	// Text Editor
+	{
+		StyleSet->Set("TextEditor.Border", new BOX_BRUSH("UI/TextEditorBorder", FMargin(4.0f / 16.0f), FLinearColor(0.02f, 0.02f, 0.02f, 1)));
+	}
+
 	FSlateStyleRegistry::RegisterSlateStyle(*StyleSet.Get());
 };
 

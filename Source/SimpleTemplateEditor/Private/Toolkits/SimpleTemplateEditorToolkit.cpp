@@ -85,6 +85,15 @@ void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate,
 								->SetSizeCoefficient(0.1f)
 								
 						)
+
+						// Compile error view
+						->Split
+						(
+							FTabManager::NewStack()
+							->AddTab(SimpleTemplateEditor::OutputTabId, ETabState::ClosedTab)
+							->SetHideTabWell(true)
+							->SetSizeCoefficient(0.1f)
+						)
 						
 						// Template editor
 						->Split
@@ -93,15 +102,6 @@ void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate,
 								->AddTab(SimpleTemplateEditor::TabId, ETabState::OpenedTab)
 								->SetHideTabWell(true)
 								->SetSizeCoefficient(0.8f)
-						)
-
-						// Compile error view
-						->Split
-						(
-							FTabManager::NewStack()
-							->AddTab(SimpleTemplateEditor::OutputTabId, ETabState::OpenedTab)
-							->SetHideTabWell(true)
-							->SetSizeCoefficient(0.1f)
 						)
 				)
 		);
