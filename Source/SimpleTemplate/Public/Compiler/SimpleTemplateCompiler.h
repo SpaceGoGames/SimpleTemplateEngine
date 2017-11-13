@@ -9,6 +9,7 @@
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonTypes.h"
 #include "Serialization/BufferReader.h"
+#include "Serialization/MemoryWriter.h"
 
 // Static tokens
 static FString TPL_START_TOKEN(TEXT("{"));
@@ -869,16 +870,41 @@ class SIMPLETEMPLATE_API TTemplateInterpreter
 {
 public:
 
-	static TSharedRef< TTemplateInterpreter > Create(FTokenArray const TokenTree)
+	static TSharedRef< TTemplateInterpreter > Create(FTokenArray& TokenTree)
 	{
 		return MakeShareable(new TTemplateInterpreter(TokenTree));
 	}
 
+	void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data)
+	{
+		for (auto token : TokenTree.Items)
+		{
+			token->Interpret(WriteStream, Data);
+		}
+	}
+
+	void Interpret(FString& OutString, TSharedPtr<FJsonObject> Data)
+	{
+		TArray<uint8> Bytes;
+		auto WriteStream = new FMemoryWriter(Bytes);
+
+		Interpret(*WriteStream, Data);
+
+		FString Out;
+		for (int32 i = 0; i < Bytes.Num(); i += sizeof(TCHAR))
+		{
+			TCHAR* Char = static_cast<TCHAR*>(static_cast<void*>(&Bytes[i]));
+			Out += *Char;
+		}
+		OutString = Out;
+		WriteStream->Close();
+		delete WriteStream;
+	}
+
 protected:
-	TTemplateInterpreter(FTokenArray const InTokenTree)
+	TTemplateInterpreter(FTokenArray& InTokenTree)
 		: TokenTree(InTokenTree)
 	{
-
 	}
 
 protected:
