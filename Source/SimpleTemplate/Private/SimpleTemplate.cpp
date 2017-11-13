@@ -90,12 +90,7 @@ bool USimpleTemplate::Compile()
 	auto compiler = TTemplateCompilerFactory<TCHAR>::Create(Template.ToString());
 	if (compiler->Compile())
 	{
-		Tokens.Empty();
-		FTokenArray compiledTokens = compiler->GetTokens();
-		for (auto Token: compiledTokens)
-		{
-			Tokens.Add(Token);
-		}
+		Tokens = compiler->GetTokenTree();
 		Status = ETemplateStatus::TS_UpToDate;
 		PostEditChange();
 		MarkPackageDirty();

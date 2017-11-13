@@ -146,7 +146,7 @@ public:
 #if WITH_EDITOR
 	FString Expression;
 #endif
-	//FTokenArray Children;
+	FTokenArray Children;
 };
 
 class SIMPLETEMPLATE_API FTokenFor : public FTokenNested
@@ -274,14 +274,37 @@ public:
 	FString Value;
 };
 
-class SIMPLETEMPLATE_API FTokenEndIf : public FTokenNested
+class SIMPLETEMPLATE_API FTokenEnd : public FToken
 {
 public:
-	FTokenEndIf() : FTokenNested() {}
+	FTokenEnd() : FToken() {}
+
+#if WITH_EDITOR
+	FTokenEnd(const FString& InExpression)
+		: FToken()
+		, Expression(InExpression)
+	{}
+#endif
+
+	virtual void Serialize(FArchive& Ar) override
+	{
+		// Children?
+	}
+
+public:
+#if WITH_EDITOR
+	FString Expression;
+#endif
+};
+
+class SIMPLETEMPLATE_API FTokenEndIf : public FTokenEnd
+{
+public:
+	FTokenEndIf() : FTokenEnd() {}
 
 #if WITH_EDITOR
 	FTokenEndIf(const FString& Expresion)
-		: FTokenNested(Expresion) {}
+		: FTokenEnd(Expresion) {}
 
 
 	virtual FString Build() override
@@ -300,14 +323,14 @@ public:
 	}
 };
 
-class SIMPLETEMPLATE_API FTokenEndFor : public FTokenNested
+class SIMPLETEMPLATE_API FTokenEndFor : public FTokenEnd
 {
 public:
-	FTokenEndFor() : FTokenNested() {}
+	FTokenEndFor() : FTokenEnd() {}
 
 #if WITH_EDITOR
 	FTokenEndFor(const FString& Expresion)
-		: FTokenNested(Expresion) {}
+		: FTokenEnd(Expresion) {}
 
 	virtual FString Build() override
 	{
@@ -340,9 +363,9 @@ public:
 public:
     virtual ~TTemplateTokenizer() {}
 
-	FTokenArray GetTokens()
+	FTokenArray GetTokenTree()
 	{
-		return Tokens;
+		return Tree;
 	}
 
 	FString GetLastError()
@@ -367,6 +390,10 @@ public:
 			return true;
 		}
 		bHasTokens = CompileWorker();
+		if (bHasTokens)
+		{
+			Parse(Tokens, Tree, ETokenType::None);
+		}
 		return bHasTokens;
 	}
 
@@ -394,6 +421,7 @@ protected:
 	// Current Stream
 	FArchive* ReadStream;
     FTokenArray Tokens;
+	FTokenArray Tree;
 	TArray<ETokenType> ParseState;
 
 	// Line/Char for error tracking
@@ -405,6 +433,27 @@ protected:
 	uint32 bHasTokens : 1;
 
 private:
+
+	void Parse(FTokenArray& tokens, FTokenArray& tree, ETokenType mark)
+	{
+		while (Tokens.Num() > 0)
+		{
+			auto token = Tokens[0];
+			Tokens.RemoveAt(0);
+			auto NestedToken = dynamic_cast<FTokenNested*>(token.Get());
+			if (NestedToken != nullptr)
+			{
+				FTokenArray children;
+				Parse(tokens, children, token->GetType() == ETokenType::For ? ETokenType::EndFor : ETokenType::EndIf);
+				NestedToken->Children = children;
+			}
+			else if (token->GetType() == mark)
+			{
+				return;
+			}
+			tree.Add(token);
+		}
+	}
 
 	bool CompileWorker()
 	{
@@ -543,6 +592,25 @@ private:
 					return false;
 				}
 			}
+		}
+
+		if (ParseState.Num() > 0)
+		{
+			ETokenType expectedToken = ParseState.Pop();
+			switch (expectedToken)
+			{
+			case ETokenType::EndIf:
+				SetError(FString::Printf(TEXT("Missing end token '%s' at EOF"), *TPL_END_IF_TOKEN));
+				break;
+			case ETokenType::EndFor:
+				SetError(FString::Printf(TEXT("Missing end token '%s' at EOF"), *TPL_END_FOR_TOKEN));
+				break;
+			default:
+				SetError(FString::Printf(TEXT("Missing unexpected end token")));
+				return false;
+				break;
+			}
+			return false;
 		}
 		return true;
 	}
