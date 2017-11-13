@@ -13,11 +13,11 @@ void USimpleTemplate::Serialize(FArchive& Ar)
 	{
 		uint32 TemplateVersion;
 		Ar << TemplateVersion;
-		if (TemplateVersion <= TPL_VERSION)
+		if (TemplateVersion != TPL_VERSION)
 		{
-			UE_LOG(LogSTE, Error, TEXT("Serialized template version is incompatible with your current version!"));
+			UE_LOG(LogSTE, Error, TEXT("Serialized template version is incompatible with your current version! Need to recompile!"));
+			Status = ETemplateStatus::TS_Dirty;
 		}
-		check(TemplateVersion <= TPL_VERSION);
 		Tokens.Serialize(Ar);
 	}
 	else if (Ar.IsSaving())

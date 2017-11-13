@@ -370,6 +370,10 @@ void FSimpleTemplateEditorToolkit::ActionCompile()
 		}
 		TemplateOutput->SetText(ErrorText);
 	}
+	else
+	{
+		SaveAsset_Execute();
+	}
 }
 
 void FSimpleTemplateEditorToolkit::ActionExport()
@@ -424,6 +428,7 @@ void FSimpleTemplateEditorToolkit::ActionImport()
 		if (FFileHelper::LoadFileToString(FileContent, *FileName))
 		{
 			SimpleTemplate->Template = FText::FromString(FileContent);
+			SimpleTemplate->Status = ETemplateStatus::TS_Dirty;
 			SimpleTemplate->PostEditChange();
 			SimpleTemplate->MarkPackageDirty();
 		}		
