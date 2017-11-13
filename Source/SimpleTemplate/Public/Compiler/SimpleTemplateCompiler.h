@@ -6,6 +6,7 @@
 #include "UObject/ObjectMacros.h"
 #include "UObject/Object.h"
 #include "Dom/JsonValue.h"
+#include "Dom/JsonObject.h"
 #include "Serialization/JsonTypes.h"
 #include "Serialization/BufferReader.h"
 
@@ -18,6 +19,42 @@ static FString TPL_END_FOR_TOKEN(TEXT("endfor"));
 
 // The template serialization version
 static uint32 TPL_VERSION = 1;
+
+class TTemplateCompilerHelper
+{
+public:
+	static TSharedPtr<FJsonValue> GetValue(FString& Key, TSharedPtr<FJsonObject> Data)
+	{
+		if (Data.IsValid() && !Key.IsEmpty())
+		{
+			TArray<FString> KeyList;
+			Key.ParseIntoArray(KeyList, TEXT("."), true);
+
+			TSharedPtr<FJsonValue> CurrentValue = nullptr;
+			TSharedPtr<FJsonObject> CurrentObject = Data;
+			for (auto i = 0; i < KeyList.Num(); i++)
+			{
+				auto CurrentKey = KeyList[i];
+
+				// Get field
+				CurrentValue = CurrentObject->TryGetField(CurrentKey);
+				if (!CurrentValue.IsValid())
+				{
+					return nullptr;
+				}
+
+				// Get next
+				CurrentObject = CurrentValue->AsObject();
+				if (!CurrentObject.IsValid())
+				{
+					return nullptr;
+				}
+			}
+			return CurrentValue;
+		}
+		return nullptr;
+	}
+};
 
 //
 // Tokens
@@ -58,7 +95,7 @@ public:
 	virtual void Serialize(FArchive& Ar) {}
 
 	// Interpret the token 
-	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonValue> Data) {}
+	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) {}
 
 	// Some tokens are nested
 	virtual void SetChildren(TArray<TSharedPtr<FToken>>& children) {}
@@ -101,7 +138,7 @@ public:
 		Ar << Text;
 	}
 
-	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonValue> Data) override
+	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
 	{
 		WriteStream << Text;
 	}
@@ -272,7 +309,7 @@ public:
 	}
 #endif
 
-	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonValue> Data) override
+	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
 	{
 		if (IsTrue(Data))
 		{
@@ -301,9 +338,24 @@ public:
 	}
 
 private:
-	bool IsTrue(TSharedPtr<FJsonValue> Data)
+	bool IsTrue(TSharedPtr<FJsonObject> Data)
 	{
-		return false;
+		// Only key provided
+		if (Value.IsEmpty())
+		{
+			bool boolValue = false;
+			auto keyDataPtr = TTemplateCompilerHelper::GetValue(Key, Data);
+			return keyDataPtr.IsValid() && keyDataPtr->TryGetBool(boolValue) && (boolValue == bSign);
+		}
+
+		// Get literal or value
+		auto keyDataPtr = TTemplateCompilerHelper::GetValue(Key, Data);
+		auto valueDataPtr = TTemplateCompilerHelper::GetValue(Value, Data);
+		if (!valueDataPtr.IsValid())
+		{
+			valueDataPtr = MakeShareable(new FJsonValueString(Value.TrimQuotes()));
+		}
+		return keyDataPtr->AsString().Equals(valueDataPtr->AsString(), bIgnoreCase ? ESearchCase::IgnoreCase : ESearchCase::CaseSensitive) == bSign;
 	}
 
 public:
@@ -804,7 +856,6 @@ protected:
 	FBufferReader* Reader;
 };
 
-
 template <class CharType = TCHAR>
 class SIMPLETEMPLATE_API TTemplateCompilerFactory
 {
@@ -821,4 +872,3 @@ public:
         return TTemplateTokenizer<CharType>::Create(Stream);
     }
 };
-
