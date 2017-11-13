@@ -6,7 +6,6 @@ namespace UnrealBuildTool.Rules
 	{
 		public SimpleTemplate(ReadOnlyTargetRules Target) : base(Target)
 		{
-            bUseRTTI = true;
 			PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 			PublicDependencyModuleNames.AddRange(

@@ -36,14 +36,7 @@ enum class ETokenType : uint8
     EndFor
 };
 
-class SIMPLETEMPLATE_API IToken
-{
-public:
-	virtual ETokenType GetType() const = 0;
-	virtual void Serialize(FArchive& Ar) = 0;
-};
-
-class SIMPLETEMPLATE_API FToken : public IToken
+class SIMPLETEMPLATE_API FToken
 {
 public:
 	FToken() {}
@@ -63,6 +56,13 @@ public:
 #endif
 	
 	virtual void Serialize(FArchive& Ar) {}
+
+	// Interpret the token 
+	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonValue> Data) {}
+
+	// Some tokens are nested
+	virtual void SetChildren(TArray<TSharedPtr<FToken>>& children) {}
+	virtual TArray<TSharedPtr<FToken>>* GetChildren() { return nullptr; }
 };
 
 typedef TSharedPtr<FToken> FTokenPtr;
@@ -99,6 +99,11 @@ public:
 	virtual void Serialize(FArchive& Ar) override
 	{
 		Ar << Text;
+	}
+
+	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonValue> Data) override
+	{
+		WriteStream << Text;
 	}
 
 public:
@@ -151,6 +156,17 @@ public:
 	virtual void Serialize(FArchive& Ar) override
 	{
 		Children.Serialize(Ar);
+	}
+
+	// Some tokens are nested
+	virtual void SetChildren(TArray<TSharedPtr<FToken>>& children)
+	{
+		Children.Items = children;
+	}
+
+	virtual TArray<TSharedPtr<FToken>>* GetChildren()
+	{
+		return &Children.Items;
 	}
 
 public:
@@ -256,15 +272,21 @@ public:
 	}
 #endif
 
+	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonValue> Data) override
+	{
+		if (IsTrue(Data))
+		{
+			for(auto child : Children.Items)
+			{
+				child->Interpret(WriteStream, Data);
+			}
+		}
+	}
+
     ETokenType GetType() const override
     {
         return ETokenType::If;
     }
-
-	bool IsTrue()
-	{
-		return false;
-	}
 
 	virtual void Serialize(FArchive& Ar) override
 	{
@@ -276,6 +298,12 @@ public:
 		bIgnoreCase = bAux;
 		Ar << Key;
 		Ar << Value;
+	}
+
+private:
+	bool IsTrue(TSharedPtr<FJsonValue> Data)
+	{
+		return false;
 	}
 
 public:
@@ -395,7 +423,7 @@ public:
 		{
 			return true;
 		}
-		bHasTokens = CompileWorker();
+		bHasTokens = Tokenize();
 		if (bHasTokens)
 		{
 			Parse(Tokens, Tree, ETokenType::None);
@@ -440,18 +468,18 @@ protected:
 
 private:
 
+	// Parse the plain token list into a tree
 	void Parse(FTokenArray& tokens, FTokenArray& tree, ETokenType mark)
 	{
 		while (Tokens.Items.Num() > 0)
 		{
 			auto token = Tokens.Items[0];
 			Tokens.Items.RemoveAt(0);
-			auto NestedToken = dynamic_cast<FTokenNested*>(token.Get());
-			if (NestedToken != nullptr)
+			if (token->GetType() == ETokenType::For || token->GetType() == ETokenType::If)
 			{
 				FTokenArray children;
 				Parse(tokens, children, token->GetType() == ETokenType::For ? ETokenType::EndFor : ETokenType::EndIf);
-				NestedToken->Children = children;
+				token->SetChildren(children.Items);
 			}
 			else if (token->GetType() == mark)
 			{
@@ -461,7 +489,8 @@ private:
 		}
 	}
 
-	bool CompileWorker()
+	// Tokenize the input stream
+	bool Tokenize()
 	{
 		if (bHasTokens)
 		{
@@ -708,24 +737,6 @@ private:
 		}
 		return false;
 	}
-
-	//void SkipWhiteSpaces()
-	//{
-	//	while (!ReadStream->AtEnd())
-	//	{
-	//		CharType Char;
-	//		if (!ReadNext(Char))
-	//		{
-	//			break;
-	//		}
-	//		if (!IsWhitespace(Char))
-	//		{
-	//			Stream->Seek(Stream->Tell() - sizeof(CharType));
-	//			--CharacterNumber;
-	//			break;
-	//		}
-	//	}
-	//}
 
 	bool IsLineBreak(const CharType& Char)
 	{
