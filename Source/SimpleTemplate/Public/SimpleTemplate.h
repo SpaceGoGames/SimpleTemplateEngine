@@ -87,10 +87,4 @@ public:
 
 private:
 	FTokenArray Tokens;
-
-	/** Add a token to our token list */
-	void AddToken(FToken* token)
-	{
-		Tokens.Add(MakeShareable(token));
-	}
 };

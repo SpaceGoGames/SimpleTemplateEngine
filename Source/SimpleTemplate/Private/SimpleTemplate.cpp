@@ -18,55 +18,12 @@ void USimpleTemplate::Serialize(FArchive& Ar)
 			UE_LOG(LogSTE, Error, TEXT("Serialized template version is incompatible with your current version!"));
 		}
 		check(TemplateVersion <= TPL_VERSION);
-
-		int32 NumTokens;
-		Ar << NumTokens;
-
-		while (NumTokens > 0)
-		{
-			--NumTokens;
-			ETokenType TokenType;
-			Ar << TokenType;
-
-			FToken* token = nullptr;
-			switch (TokenType)
-			{
-			case ETokenType::Text:
-				token = new FTokenText();
-				break;
-			case ETokenType::Var:
-				token = new FTokenVar();
-				break;
-			case ETokenType::If:
-				token = new FTokenIf();
-				break;
-			case ETokenType::For:
-				token = new FTokenFor();
-				break;
-			case ETokenType::EndIf:
-				token = new FTokenEndIf();
-				break;
-			case ETokenType::EndFor:
-				token = new FTokenEndFor();
-				break;
-			}
-
-			token->Serialize(Ar);
-			AddToken(token);
-		}
+		Tokens.Serialize(Ar);
 	}
 	else if (Ar.IsSaving())
 	{
 		Ar << TPL_VERSION;
-		int32 NumTokens = Tokens.Num();
-		Ar << NumTokens;
-		for (auto Token : Tokens)
-		{
-			// Always add the type first
-			ETokenType serializedType = Token->GetType();
-			Ar << serializedType;
-			Token->Serialize(Ar);
-		}
+		Tokens.Serialize(Ar);
 	}
 }
 

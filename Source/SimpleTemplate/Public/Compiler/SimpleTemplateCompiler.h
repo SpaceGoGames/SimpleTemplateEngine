@@ -66,7 +66,18 @@ public:
 };
 
 typedef TSharedPtr<FToken> FTokenPtr;
-typedef TArray<FTokenPtr> FTokenArray;
+
+class SIMPLETEMPLATE_API FTokenArray : public FToken
+{
+public:
+	FTokenArray() {}
+	~FTokenArray() {}
+
+	void Serialize(FArchive& Ar);
+
+public:
+	TArray<FTokenPtr> Items;
+};
 
 class SIMPLETEMPLATE_API FTokenText : public FToken
 {
@@ -139,7 +150,7 @@ public:
 
 	virtual void Serialize(FArchive& Ar) override
 	{
-		// Children?
+		Children.Serialize(Ar);
 	}
 
 public:
@@ -257,7 +268,7 @@ public:
 
 	virtual void Serialize(FArchive& Ar) override
 	{
-		FToken::Serialize(Ar);
+		FTokenNested::Serialize(Ar);
 		bool bAux;
 		Ar << bAux;
 		bSign = bAux;
@@ -285,11 +296,6 @@ public:
 		, Expression(InExpression)
 	{}
 #endif
-
-	virtual void Serialize(FArchive& Ar) override
-	{
-		// Children?
-	}
 
 public:
 #if WITH_EDITOR
@@ -436,10 +442,10 @@ private:
 
 	void Parse(FTokenArray& tokens, FTokenArray& tree, ETokenType mark)
 	{
-		while (Tokens.Num() > 0)
+		while (Tokens.Items.Num() > 0)
 		{
-			auto token = Tokens[0];
-			Tokens.RemoveAt(0);
+			auto token = Tokens.Items[0];
+			Tokens.Items.RemoveAt(0);
 			auto NestedToken = dynamic_cast<FTokenNested*>(token.Get());
 			if (NestedToken != nullptr)
 			{
@@ -451,7 +457,7 @@ private:
 			{
 				return;
 			}
-			tree.Add(token);
+			tree.Items.Add(token);
 		}
 	}
 
@@ -644,7 +650,7 @@ private:
 		FString buildError = token->Build();
 		if (buildError.IsEmpty())
 		{
-			Tokens.Add(MakeShareable(token));
+			Tokens.Items.Add(MakeShareable(token));
 			return true;
 		}
 		SetError(buildError);
