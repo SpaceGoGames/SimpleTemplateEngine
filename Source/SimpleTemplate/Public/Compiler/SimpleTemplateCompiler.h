@@ -248,11 +248,38 @@ public:
 		{
 			return FString::Printf(TEXT("'for' token must in form of: for key in value. '%s' found instead"), *Expression);
 		}
-		Key = ForValues[1];
-		Value = ForValues[3];
+		Value = ForValues[1];
+		List = ForValues[3];
 		return FString();
 	}
 #endif
+
+	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
+	{
+		auto listDataPtr = TTemplateCompilerHelper::GetValue(List, Data);
+		const TArray<TSharedPtr<FJsonValue>>* list;
+		if (listDataPtr->TryGetArray(list))
+		{
+			for (int i = 0; i < list->Num(); i++)
+			{
+				// Add loop data
+				// loop.index
+				TSharedPtr<FJsonObject> loopData = MakeShareable(new FJsonObject());
+				loopData->SetNumberField("index", i);
+				Data->SetObjectField("loop", loopData);
+
+				// Set item
+				auto item = (*list)[0];
+				Data->SetField(Value, item);
+
+				// Now propagate
+				for (auto child : Children.Items)
+				{
+					child->Interpret(WriteStream, Data);
+				}
+			}
+		}
+	}
 
     ETokenType GetType() const override
     {
@@ -262,12 +289,12 @@ public:
 	virtual void Serialize(FArchive& Ar) override
 	{
 		FTokenNested::Serialize(Ar);
-		Ar << Key;
+		Ar << List;
 		Ar << Value;
 	}
 
 public:
-	FString Key;
+	FString List;
 	FString Value;
 };
 
