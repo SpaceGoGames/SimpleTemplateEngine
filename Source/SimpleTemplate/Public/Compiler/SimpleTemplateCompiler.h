@@ -43,11 +43,15 @@ public:
 					return nullptr;
 				}
 
-				// Get next
-				CurrentObject = CurrentValue->AsObject();
-				if (!CurrentObject.IsValid())
+				// Prepare for next field
+				if (i < KeyList.Num() - 1)
 				{
-					return nullptr;
+					// Get next
+					CurrentObject = CurrentValue->AsObject();
+					if (!CurrentObject.IsValid())
+					{
+						return nullptr;
+					}
 				}
 			}
 			return CurrentValue;
@@ -172,6 +176,16 @@ public:
 	virtual void Serialize(FArchive& Ar) override
 	{
 		Ar << Key;
+	}
+
+	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
+	{
+		auto value = TTemplateCompilerHelper::GetValue(Key, Data);
+		FString valueStr;
+		if (value.IsValid() && value->TryGetString(valueStr))
+		{
+			WriteStream << valueStr;
+		}
 	}
 
 public:
@@ -348,14 +362,18 @@ private:
 			return keyDataPtr.IsValid() && keyDataPtr->TryGetBool(boolValue) && (boolValue == bSign);
 		}
 
-		// Get literal or value
-		auto keyDataPtr = TTemplateCompilerHelper::GetValue(Key, Data);
-		auto valueDataPtr = TTemplateCompilerHelper::GetValue(Value, Data);
-		if (!valueDataPtr.IsValid())
+		// Find l-value and r-value
+		auto lValuePtr = TTemplateCompilerHelper::GetValue(Key, Data);
+		auto rValuePtr = TTemplateCompilerHelper::GetValue(Value, Data);
+		if (!rValuePtr.IsValid())
 		{
-			valueDataPtr = MakeShareable(new FJsonValueString(Value.TrimQuotes()));
+			rValuePtr = MakeShareable(new FJsonValueString(Value.TrimQuotes()));
 		}
-		return keyDataPtr->AsString().Equals(valueDataPtr->AsString(), bIgnoreCase ? ESearchCase::IgnoreCase : ESearchCase::CaseSensitive) == bSign;
+
+		// Compare
+		FString lValue;
+		FString rValue;
+		return lValuePtr->TryGetString(lValue) && rValuePtr->TryGetString(rValue) && (lValue.Equals(rValue, bIgnoreCase ? ESearchCase::IgnoreCase : ESearchCase::CaseSensitive) == bSign);
 	}
 
 public:
@@ -702,19 +720,6 @@ private:
 		return true;
 	}
 
-	bool ParseTemplateWorker(FArchive* WriteStream, TSharedPtr<FJsonValue> Data)
-	{
-		ClearError();
-		if (!bHasTokens)
-		{
-			SetError(TEXT("A template must be tokenized before it can be parsed. Please call Tokenize() atleast once."));
-			return false;
-		}
-		// Do not use state-full data here!
-
-		return true;
-	}
-
 	void SetError(const FString& Error)
 	{
 		ErrorMessage = FString::Printf(TEXT("[ERROR] Line: %u Ch: %u: %s"), LineNumber, CharNumber, *Error);
@@ -854,6 +859,30 @@ protected:
 
 protected:
 	FBufferReader* Reader;
+};
+
+//
+// Factory for easy access
+//
+
+class SIMPLETEMPLATE_API TTemplateInterpreter
+{
+public:
+
+	static TSharedRef< TTemplateInterpreter > Create(FTokenArray const TokenTree)
+	{
+		return MakeShareable(new TTemplateInterpreter(TokenTree));
+	}
+
+protected:
+	TTemplateInterpreter(FTokenArray const InTokenTree)
+		: TokenTree(InTokenTree)
+	{
+
+	}
+
+protected:
+	FTokenArray const TokenTree;
 };
 
 template <class CharType = TCHAR>
