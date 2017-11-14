@@ -7,9 +7,12 @@
 #include "UObject/Object.h"
 #include "Dom/JsonValue.h"
 #include "Dom/JsonObject.h"
+#include "JsonObjectConverter.h"
 #include "Serialization/JsonTypes.h"
 #include "Serialization/BufferReader.h"
 #include "Serialization/MemoryWriter.h"
+
+#include "SimpleTemplateCompiler.generated.h"
 
 // Static tokens
 static FString TPL_START_TOKEN(TEXT("{"));
@@ -107,11 +110,12 @@ public:
 
 typedef TSharedPtr<FToken> FTokenPtr;
 
-class SIMPLETEMPLATE_API FTokenArray : public FToken
+USTRUCT(Blueprintable)
+struct SIMPLETEMPLATE_API FTokenArray
 {
+	GENERATED_USTRUCT_BODY()
+
 public:
-	FTokenArray() {}
-	~FTokenArray() {}
 
 	void Serialize(FArchive& Ar);
 
@@ -886,30 +890,57 @@ public:
 		return MakeShareable(new TTemplateInterpreter(TokenTree));
 	}
 
-	void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data)
+	// TODO: Add error handling
+
+	bool Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data)
 	{
 		for (auto token : TokenTree.Items)
 		{
 			token->Interpret(WriteStream, Data);
 		}
+		return true;
 	}
 
-	void Interpret(FString& OutString, TSharedPtr<FJsonObject> Data)
+	bool Interpret(FString& OutString, TSharedPtr<FJsonObject> Data)
 	{
 		TArray<uint8> Bytes;
 		auto WriteStream = new FMemoryWriter(Bytes);
 
-		Interpret(*WriteStream, Data);
-
-		FString Out;
-		for (int32 i = 0; i < Bytes.Num(); i += sizeof(TCHAR))
+		if (Interpret(*WriteStream, Data))
 		{
-			TCHAR* Char = static_cast<TCHAR*>(static_cast<void*>(&Bytes[i]));
-			Out += *Char;
+
+			FString Out;
+			for (int32 i = 0; i < Bytes.Num(); i += sizeof(TCHAR))
+			{
+				TCHAR* Char = static_cast<TCHAR*>(static_cast<void*>(&Bytes[i]));
+				Out += *Char;
+			}
+			OutString = Out;
+			WriteStream->Close();
+			delete WriteStream;
+			return true;
 		}
-		OutString = Out;
-		WriteStream->Close();
-		delete WriteStream;
+		return false;
+	}
+
+	bool Inter(FArchive& WriteStream, const UStruct* Struct)
+	{
+		TSharedRef<FJsonObject> Data = MakeShareable(new FJsonObject);
+		if (FJsonObjectConverter::UStructToJsonObject(Struct->GetClass(), Struct, Data, 0, 0))
+		{
+			return Interpret(WriteStream, Data);
+		}
+		return false;
+	}
+
+	bool Inter(FString& OutString, const UStruct* Struct)
+	{
+		TSharedRef<FJsonObject> Data = MakeShareable(new FJsonObject);
+		if (FJsonObjectConverter::UStructToJsonObject(Struct->GetClass(), Struct, Data, 0, 0))
+		{
+			return Interpret(OutString, Data);
+		}
+		return false;
 	}
 
 protected:
