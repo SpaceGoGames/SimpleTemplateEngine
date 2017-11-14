@@ -90,12 +90,10 @@ public:
 		return ETokenType::None;
 	}
 
-#if WITH_EDITOR
 	virtual FString Build()
 	{
 		return FString();
 	}
-#endif
 	
 	virtual void Serialize(FArchive& Ar) {}
 
@@ -126,12 +124,10 @@ class SIMPLETEMPLATE_API FTokenText : public FToken
 public:
 	FTokenText() : FToken() {}
 
-#if WITH_EDITOR
     FTokenText(const FString& InText)
         : FToken()
 		, Text(InText)
 	{}
-#endif
 
     ETokenType GetType() const override
     {
@@ -157,7 +153,6 @@ class SIMPLETEMPLATE_API FTokenVar : public FToken
 public:
 	FTokenVar() : FToken() {}
 
-#if WITH_EDITOR
 	FTokenVar(const FString& InKey)
 		: FToken()
 		, Key(InKey)
@@ -167,7 +162,6 @@ public:
 	{
 		return FString();
 	}
-#endif
 
 	ETokenType GetType() const override
 	{
@@ -198,15 +192,14 @@ class SIMPLETEMPLATE_API FTokenNested : public FToken
 public:
 	FTokenNested() : FToken() {}
 
-#if WITH_EDITOR
 	FTokenNested(const FString& InExpression)
 		: FToken()
 		, Expression(InExpression)
 	{}
-#endif
 
 	virtual void Serialize(FArchive& Ar) override
 	{
+		Ar << Expression;
 		Children.Serialize(Ar);
 	}
 
@@ -222,9 +215,7 @@ public:
 	}
 
 public:
-#if WITH_EDITOR
 	FString Expression;
-#endif
 	FTokenArray Children;
 };
 
@@ -233,7 +224,6 @@ class SIMPLETEMPLATE_API FTokenFor : public FTokenNested
 public:
 	FTokenFor() : FTokenNested() {}
 
-#if WITH_EDITOR
 	FTokenFor(const FString& Expresion)
 		: FTokenNested(Expresion)
 	{
@@ -252,7 +242,6 @@ public:
 		List = ForValues[3];
 		return FString();
 	}
-#endif
 
 	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
 	{
@@ -303,7 +292,6 @@ class SIMPLETEMPLATE_API FTokenIf : public FTokenNested
 public:
 	FTokenIf() : FTokenNested() {}
 
-#if WITH_EDITOR
 	FTokenIf(const FString& Expresion)
 		: FTokenNested(Expresion) {}
 
@@ -349,7 +337,6 @@ public:
 		}
 		return FString();
 	}
-#endif
 
 	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
 	{
@@ -416,17 +403,18 @@ class SIMPLETEMPLATE_API FTokenEnd : public FToken
 public:
 	FTokenEnd() : FToken() {}
 
-#if WITH_EDITOR
 	FTokenEnd(const FString& InExpression)
 		: FToken()
 		, Expression(InExpression)
 	{}
-#endif
+
+	virtual void Serialize(FArchive& Ar) override
+	{
+		Ar << Expression;
+	}
 
 public:
-#if WITH_EDITOR
 	FString Expression;
-#endif
 };
 
 class SIMPLETEMPLATE_API FTokenEndIf : public FTokenEnd
@@ -434,7 +422,6 @@ class SIMPLETEMPLATE_API FTokenEndIf : public FTokenEnd
 public:
 	FTokenEndIf() : FTokenEnd() {}
 
-#if WITH_EDITOR
 	FTokenEndIf(const FString& Expresion)
 		: FTokenEnd(Expresion) {}
 
@@ -447,7 +434,6 @@ public:
 		}
 		return FString();
 	}
-#endif
 
 	ETokenType GetType() const override
 	{
@@ -460,7 +446,6 @@ class SIMPLETEMPLATE_API FTokenEndFor : public FTokenEnd
 public:
 	FTokenEndFor() : FTokenEnd() {}
 
-#if WITH_EDITOR
 	FTokenEndFor(const FString& Expresion)
 		: FTokenEnd(Expresion) {}
 
@@ -472,7 +457,6 @@ public:
 		}
 		return FString();
 	}
-#endif
 
 	ETokenType GetType() const override
 	{
