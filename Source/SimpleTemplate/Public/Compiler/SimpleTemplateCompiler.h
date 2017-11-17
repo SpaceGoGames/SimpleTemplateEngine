@@ -16,6 +16,7 @@
 
 // Static tokens
 static FString TPL_START_TOKEN(TEXT("{"));
+static FString TPL_END_TOKEN(TEXT("}"));
 static FString TPL_START_IF_TOKEN(TEXT("if"));
 static FString TPL_END_IF_TOKEN(TEXT("endif"));
 static FString TPL_START_FOR_TOKEN(TEXT("for"));
@@ -635,7 +636,7 @@ private:
 				}
 				else
 				{
-					SetError(TEXT("Missing end token after a var token"));
+					SetError(FString::Printf(TEXT("Missing '}' after a var token"), *TPL_END_TOKEN));
 					return false;
 				}
 			}
@@ -702,7 +703,7 @@ private:
 				}
 				else
 				{
-					SetError(TEXT("Missing '}'"));
+					SetError(FString::Printf(TEXT("Missing '%s' after control token"), *TPL_END_TOKEN));
 					return false;
 				}
 			}
@@ -923,7 +924,7 @@ public:
 		return false;
 	}
 
-	bool Inter(FArchive& WriteStream, const UStruct* Struct)
+	bool Interpret(FArchive& WriteStream, const UStruct* Struct)
 	{
 		TSharedRef<FJsonObject> Data = MakeShareable(new FJsonObject);
 		if (FJsonObjectConverter::UStructToJsonObject(Struct->GetClass(), Struct, Data, 0, 0))
@@ -933,7 +934,7 @@ public:
 		return false;
 	}
 
-	bool Inter(FString& OutString, const UStruct* Struct)
+	bool Interpret(FString& OutString, const UStruct* Struct)
 	{
 		TSharedRef<FJsonObject> Data = MakeShareable(new FJsonObject);
 		if (FJsonObjectConverter::UStructToJsonObject(Struct->GetClass(), Struct, Data, 0, 0))

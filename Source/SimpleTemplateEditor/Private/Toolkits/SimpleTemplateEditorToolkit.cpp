@@ -100,7 +100,7 @@ void FSimpleTemplateEditorToolkit::Initialize(USimpleTemplate* InSimpleTemplate,
 						(
 							FTabManager::NewStack()
 								->AddTab(SimpleTemplateEditor::TabId, ETabState::OpenedTab)
-								->SetHideTabWell(true)
+								->SetHideTabWell(false)
 								->SetSizeCoefficient(0.8f)
 						)
 				)

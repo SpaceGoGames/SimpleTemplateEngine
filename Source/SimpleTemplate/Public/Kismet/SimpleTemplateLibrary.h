@@ -4,6 +4,7 @@
 
 #include "Compiler/SimpleTemplateCompiler.h"
 #include "SimpleTemplate.h"
+#include "SimpleTemplateData.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "JsonObjectConverter.h"
 #include "SimpleTemplateLibrary.generated.h"
@@ -14,4 +15,8 @@ class SIMPLETEMPLATE_API USimpleTemplateLibrary : public UBlueprintFunctionLibra
 	GENERATED_BODY()
 
 public:
+
+	/** Interpret a template */
+	UFUNCTION(BlueprintCallable, Category = "Simple Template Engine")
+	static FString Interpret(USimpleTemplate* SimpleTemplate, USimpleTemplateData* Data);
 };

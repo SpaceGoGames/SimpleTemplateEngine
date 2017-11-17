@@ -6,6 +6,7 @@
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
 
+#include "SimpleTemplateData.h"
 #include "Compiler/SimpleTemplateCompiler.h"
 
 #include "SimpleTemplate.generated.h"
@@ -29,7 +30,6 @@ enum class ETemplateStatus : uint8
 	/** Template is in the process of being created for the first time. */
 	TS_BeingCreated
 };
-
 
 /**
  * Asset used to implement complex template replace logic.
@@ -57,11 +57,11 @@ public:
 	UPROPERTY()
 	uint32 CharacterNumber;
 
-	/** The current status of this template */
-	UPROPERTY()
-	ETemplateStatus Status;
-
 	bool Compile();
+
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+#endif
 
 	bool IsUpToDate() const
 	{
@@ -78,12 +78,16 @@ public:
 		return (ETemplateStatus::TS_Error == Status);
 	}
 
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-
-#endif
+	FString Interpret(USimpleTemplateData* Data);
 
 	// UObject interface
 	virtual void Serialize(FArchive& Ar) override;
+
+public:
+
+	/** The current status of this template */
+	UPROPERTY()
+	ETemplateStatus Status;
 
 private:
 	FTokenArray Tokens;

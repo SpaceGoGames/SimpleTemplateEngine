@@ -27,6 +27,20 @@ void USimpleTemplate::Serialize(FArchive& Ar)
 	}
 }
 
+FString USimpleTemplate::Interpret(USimpleTemplateData* Data)
+{
+	if (IsUpToDate())
+	{
+		auto interpreter = TTemplateInterpreter::Create(Tokens);
+		//FString OutString;
+		//if (interpreter->Interpret(OutString, Data))
+		//{
+		//	return OutString;
+		//}
+	}
+	return FString();
+}
+
 #if WITH_EDITOR
 
 void USimpleTemplate::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
