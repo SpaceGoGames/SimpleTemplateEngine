@@ -27,16 +27,16 @@ void USimpleTemplate::Serialize(FArchive& Ar)
 	}
 }
 
-FString USimpleTemplate::Interpret(USimpleTemplateData* Data)
+FString USimpleTemplate::Interpret(TScriptInterface<ISimpleTemplateDataProvider> DataProvider)
 {
 	if (IsUpToDate())
 	{
 		auto interpreter = TTemplateInterpreter::Create(Tokens);
-		//FString OutString;
-		//if (interpreter->Interpret(OutString, Data))
-		//{
-		//	return OutString;
-		//}
+		FString OutString;
+		if (interpreter->Interpret(OutString, DataProvider))
+		{
+			return OutString;
+		}
 	}
 	return FString();
 }

@@ -9,6 +9,8 @@
 #include "SimpleTemplateData.h"
 #include "Compiler/SimpleTemplateCompiler.h"
 
+#include "Interfaces/SimpleTemplateDataProvider.h"
+
 #include "SimpleTemplate.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogSTE, Verbose, All);
@@ -78,7 +80,7 @@ public:
 		return (ETemplateStatus::TS_Error == Status);
 	}
 
-	FString Interpret(USimpleTemplateData* Data);
+	FString Interpret(TScriptInterface<ISimpleTemplateDataProvider> DataProvider);
 
 	// UObject interface
 	virtual void Serialize(FArchive& Ar) override;

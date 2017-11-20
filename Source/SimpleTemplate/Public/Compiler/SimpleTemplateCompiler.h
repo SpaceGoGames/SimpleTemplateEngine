@@ -11,6 +11,7 @@
 #include "Serialization/JsonTypes.h"
 #include "Serialization/BufferReader.h"
 #include "Serialization/MemoryWriter.h"
+#include "Interfaces/SimpleTemplateDataProvider.h"
 
 #include "SimpleTemplateCompiler.generated.h"
 
@@ -146,7 +147,7 @@ public:
 
 	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
 	{
-		WriteStream << Text;
+		WriteStream.Serialize((void*)*Text, Text.Len() * sizeof(TCHAR));
 	}
 
 public:
@@ -184,7 +185,7 @@ public:
 		FString valueStr;
 		if (value.IsValid() && value->TryGetString(valueStr))
 		{
-			WriteStream << valueStr;
+			WriteStream.Serialize((void*)*valueStr, valueStr.Len() * sizeof(TCHAR));
 		}
 	}
 
@@ -924,24 +925,14 @@ public:
 		return false;
 	}
 
-	bool Interpret(FArchive& WriteStream, const UStruct* Struct)
+	bool Interpret(FArchive& WriteStream, TScriptInterface<ISimpleTemplateDataProvider> DataProvider)
 	{
-		TSharedRef<FJsonObject> Data = MakeShareable(new FJsonObject);
-		if (FJsonObjectConverter::UStructToJsonObject(Struct->GetClass(), Struct, Data, 0, 0))
-		{
-			return Interpret(WriteStream, Data);
-		}
-		return false;
+		return DataProvider != nullptr ? Interpret(WriteStream, DataProvider->GetData()) : false;
 	}
 
-	bool Interpret(FString& OutString, const UStruct* Struct)
+	bool Interpret(FString& OutString, TScriptInterface<ISimpleTemplateDataProvider> DataProvider)
 	{
-		TSharedRef<FJsonObject> Data = MakeShareable(new FJsonObject);
-		if (FJsonObjectConverter::UStructToJsonObject(Struct->GetClass(), Struct, Data, 0, 0))
-		{
-			return Interpret(OutString, Data);
-		}
-		return false;
+		return DataProvider != nullptr ? Interpret(OutString, DataProvider->GetData()) : false;
 	}
 
 protected:

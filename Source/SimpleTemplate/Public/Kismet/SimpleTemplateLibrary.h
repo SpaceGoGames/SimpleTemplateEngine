@@ -18,5 +18,9 @@ public:
 
 	/** Interpret a template */
 	UFUNCTION(BlueprintCallable, Category = "Simple Template Engine")
-	static FString Interpret(USimpleTemplate* SimpleTemplate, USimpleTemplateData* Data);
+	static FString Interpret(USimpleTemplate* SimpleTemplate, TScriptInterface<ISimpleTemplateDataProvider> DataProvider);
+
+	/** Create a simple data provider */
+	UFUNCTION(BlueprintCallable, Category = "Simple Template Engine")
+	static USimpleTemplateData* NewDataProvider(const FString& Data);
 };

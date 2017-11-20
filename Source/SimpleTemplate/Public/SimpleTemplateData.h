@@ -5,7 +5,8 @@
 #include "Internationalization/Text.h"
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
-#include "JsonObjectWrapper.h"
+#include "Dom/JsonObject.h"
+#include "Interfaces/SimpleTemplateDataProvider.h"
 
 #include "SimpleTemplateData.generated.h"
 
@@ -13,14 +14,23 @@
  *Object used to provide a SimpleTemplate with data
  */
 UCLASS(BlueprintType, hidecategories=(Object))
-class SIMPLETEMPLATE_API USimpleTemplateData
-    : public UObject
+class SIMPLETEMPLATE_API USimpleTemplateData : public UObject, public ISimpleTemplateDataProvider
 {
     GENERATED_BODY()
 
 public:
+	USimpleTemplateData();
 
     /** The template data */
     UPROPERTY(EditAnywhere, Category = "Data")
-    FJsonObjectWrapper Data;
+    FString Json;
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	bool SetData(const FString& Data);
+
+	virtual TSharedPtr<FJsonObject> GetData() const override;
+
+private:
+	FString JsonString;
+	TSharedPtr<FJsonObject> JsonPtr;
 };
