@@ -7,7 +7,6 @@
 #include "UObject/Object.h"
 #include "Dom/JsonValue.h"
 #include "Dom/JsonObject.h"
-#include "JsonObjectConverter.h"
 #include "Serialization/JsonTypes.h"
 #include "Serialization/BufferReader.h"
 #include "Serialization/MemoryWriter.h"
@@ -477,9 +476,9 @@ template <class CharType = TCHAR>
 class SIMPLETEMPLATE_API TTemplateTokenizer
 {
 public:
-    static TSharedRef< TTemplateTokenizer<CharType>> Create()
+    static TSharedRef< TTemplateTokenizer<CharType>> Create(FArchive* const Stream)
     {
-        return MakeShareable(new TTemplateTokenizer<CharType>());
+        return MakeShareable(new TTemplateTokenizer<CharType>(Stream));
     }
 
 public:

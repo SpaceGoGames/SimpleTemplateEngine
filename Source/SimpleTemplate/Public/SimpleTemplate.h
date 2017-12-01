@@ -91,6 +91,6 @@ public:
 	UPROPERTY()
 	ETemplateStatus Status;
 
-private:
+	/** Compiled tokens */
 	FTokenArray Tokens;
 };

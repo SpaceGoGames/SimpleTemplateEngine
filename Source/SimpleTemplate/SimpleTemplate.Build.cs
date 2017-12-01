@@ -13,8 +13,7 @@ namespace UnrealBuildTool.Rules
 					"Core",
 					"CoreUObject",
                     "Engine",
-                    "Json",
-                    "JsonUtilities"
+                    "Json"
 				});
 
 			PrivateIncludePaths.AddRange(
