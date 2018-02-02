@@ -263,7 +263,7 @@ public:
 				Data->SetObjectField("loop", loopData);
 
 				// Set item
-				auto item = (*list)[0];
+				auto item = (*list)[i];
 				Data->SetField(Value, item);
 
 				// Now propagate
@@ -322,6 +322,7 @@ public:
 		// if var
 		else if (IfValues.Num() == 2)
 		{
+			bSign = true;
 			Key = IfValues[1];
 		}
 		// if var == value | if var != value
