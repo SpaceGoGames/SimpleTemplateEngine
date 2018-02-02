@@ -666,37 +666,45 @@ private:
 						Buffer.TrimTrailing();
 
 						// Check end token to match ParseState
-						ETokenType expectedToken = ParseState.Pop();
-						switch (expectedToken)
+						if (ParseState.Num() > 0)
 						{
-						case ETokenType::EndIf:
-							if (!Buffer.Equals(TPL_END_IF_TOKEN, ESearchCase::IgnoreCase))
+							ETokenType expectedToken = ParseState.Pop();
+							switch (expectedToken)
 							{
-								SetError(FString::Printf(TEXT("'%s' expected. '%s' found instead."), *TPL_END_IF_TOKEN, *Buffer));
+							case ETokenType::EndIf:
+								if (!Buffer.Equals(TPL_END_IF_TOKEN, ESearchCase::IgnoreCase))
+								{
+									SetError(FString::Printf(TEXT("'%s' expected. '%s' found instead."), *TPL_END_IF_TOKEN, *Buffer));
+									return false;
+								}
+								// Add token
+								if (!AddToken(new FTokenEndIf(Buffer)))
+								{
+									return false;
+								}
+								break;
+							case ETokenType::EndFor:
+								if (!Buffer.Equals(TPL_END_FOR_TOKEN, ESearchCase::IgnoreCase))
+								{
+									SetError(FString::Printf(TEXT("'%s' expected. '%s' found instead."), *TPL_END_FOR_TOKEN, *Buffer));
+									return false;
+								}
+								// Add token
+								if (!AddToken(new FTokenEndFor(Buffer)))
+								{
+									return false;
+								}
+								break;
+							default:
+								SetError(FString::Printf(TEXT("Unexpected token '%s'."), *Buffer));
 								return false;
+								break;
 							}
-							// Add token
-							if (!AddToken(new FTokenEndIf(Buffer)))
-							{
-								return false;
-							}
-							break;
-						case ETokenType::EndFor:
-							if (!Buffer.Equals(TPL_END_FOR_TOKEN, ESearchCase::IgnoreCase))
-							{
-								SetError(FString::Printf(TEXT("'%s' expected. '%s' found instead."), *TPL_END_FOR_TOKEN, *Buffer));
-								return false;
-							}
-							// Add token
-							if (!AddToken(new FTokenEndFor(Buffer)))
-							{
-								return false;
-							}
-							break;
-						default:
+						}
+						else
+						{
 							SetError(FString::Printf(TEXT("Unexpected token '%s'."), *Buffer));
 							return false;
-							break;
 						}
 					}
 					Buffer = "";
