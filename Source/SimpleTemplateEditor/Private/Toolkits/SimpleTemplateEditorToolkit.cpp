@@ -357,7 +357,11 @@ FText FSimpleTemplateEditorToolkit::GetStatusTooltip() const
 
 void FSimpleTemplateEditorToolkit::ActionCompile()
 {
-	TemplateOutput->SetText(LOCTEXT("CompileSuccessful", "Template compiled successfully"));
+	if (SimpleTemplate->Status == ETemplateStatus::TS_BeingCreated)
+	{
+		SaveAsset_Execute();
+	}
+
 	if (!SimpleTemplate->Compile())
 	{
 		FString ErrorText;
@@ -372,12 +376,18 @@ void FSimpleTemplateEditorToolkit::ActionCompile()
 	}
 	else
 	{
+		TemplateOutput->SetText(LOCTEXT("CompileSuccessful", "Template compiled successfully"));
 		SaveAsset_Execute();
 	}
 }
 
 void FSimpleTemplateEditorToolkit::ActionExport()
 {
+	if (SimpleTemplate->Status == ETemplateStatus::TS_BeingCreated)
+	{
+		SaveAsset_Execute();
+	}
+
 	TArray<FString> SaveFilenames;
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 	bool bSaved = false;
@@ -403,6 +413,11 @@ void FSimpleTemplateEditorToolkit::ActionExport()
 
 void FSimpleTemplateEditorToolkit::ActionImport()
 {
+	if (SimpleTemplate->Status == ETemplateStatus::TS_BeingCreated)
+	{
+		SaveAsset_Execute();
+	}
+
 	TArray<FString> OpenFilenames;
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 	bool bOpened = false;
@@ -437,6 +452,10 @@ void FSimpleTemplateEditorToolkit::ActionImport()
 
 FReply FSimpleTemplateEditorToolkit::GoToError()
 {
+	if (SimpleTemplate->Status == ETemplateStatus::TS_BeingCreated)
+	{
+		SaveAsset_Execute();
+	}
 	TemplateEditor->GoTo(SimpleTemplate->LineNumber, SimpleTemplate->CharacterNumber);
 	return FReply::Handled();
 }
