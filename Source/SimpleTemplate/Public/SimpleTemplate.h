@@ -11,6 +11,8 @@
 
 #include "Interfaces/SimpleTemplateDataProvider.h"
 
+#include "Serialization/JsonTypes.h"
+
 #include "SimpleTemplate.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogSTE, Verbose, All);
@@ -81,6 +83,7 @@ public:
 	}
 
 	FString Interpret(TScriptInterface<ISimpleTemplateDataProvider> DataProvider);
+	FString Interpret(TSharedPtr<FJsonObject> Data);
 
 	// UObject interface
 	virtual void Serialize(FArchive& Ar) override;

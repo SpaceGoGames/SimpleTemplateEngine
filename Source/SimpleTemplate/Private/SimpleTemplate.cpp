@@ -27,6 +27,20 @@ void USimpleTemplate::Serialize(FArchive& Ar)
 	}
 }
 
+FString USimpleTemplate::Interpret(TSharedPtr<FJsonObject> Data)
+{
+	if (IsUpToDate())
+	{
+		auto interpreter = TTemplateInterpreter::Create(Tokens);
+		FString OutString;
+		if (interpreter->Interpret(OutString, Data))
+		{
+			return OutString;
+		}
+	}
+	return FString();
+}
+
 FString USimpleTemplate::Interpret(TScriptInterface<ISimpleTemplateDataProvider> DataProvider)
 {
 	if (IsUpToDate())
