@@ -1,8 +1,9 @@
 // Copyright Playspace S.L. 2017
+#include "Kismet/SimpleTemplateLibrary.h"
+
 #include "Serialization/JsonTypes.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
-#include "Kismet/SimpleTemplateLibrary.h"
 
 USimpleTemplateData* USimpleTemplateLibrary::NewDataProvider(const FString& Data)
 {
