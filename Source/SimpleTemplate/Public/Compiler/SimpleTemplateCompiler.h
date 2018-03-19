@@ -252,7 +252,7 @@ public:
 	{
 		auto listDataPtr = TTemplateCompilerHelper::GetValue(List, Data);
 		const TArray<TSharedPtr<FJsonValue>>* list;
-		if (listDataPtr->TryGetArray(list))
+		if (listDataPtr.IsValid() && listDataPtr->TryGetArray(list))
 		{
 			for (int i = 0; i < list->Num(); i++)
 			{
@@ -394,7 +394,7 @@ private:
 		// Compare
 		FString lValue;
 		FString rValue;
-		return lValuePtr->TryGetString(lValue) && rValuePtr->TryGetString(rValue) && (lValue.Equals(rValue, bIgnoreCase ? ESearchCase::IgnoreCase : ESearchCase::CaseSensitive) == bSign);
+		return lValuePtr.IsValid() && rValuePtr.IsValid() && lValuePtr->TryGetString(lValue) && rValuePtr->TryGetString(rValue) && (lValue.Equals(rValue, bIgnoreCase ? ESearchCase::IgnoreCase : ESearchCase::CaseSensitive) == bSign);
 	}
 
 public:
@@ -828,7 +828,7 @@ private:
 	
 	bool IsEOF(const CharType& Char)
 	{
-		return Char == CharType('0');
+		return Char == CharType('\0');
 	}
 
 	bool IsTokenStart(const CharType& Char)
