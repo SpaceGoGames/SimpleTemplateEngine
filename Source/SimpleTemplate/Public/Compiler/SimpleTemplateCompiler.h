@@ -10,8 +10,6 @@
 #include "Serialization/JsonTypes.h"
 #include "Serialization/BufferReader.h"
 #include "Serialization/MemoryWriter.h"
-#include "Serialization/JsonSerializer.h"
-#include "Policies/CondensedJsonPrintPolicy.h"
 #include "Interfaces/SimpleTemplateDataProvider.h"
 
 #include "SimpleTemplateCompiler.generated.h"
@@ -26,8 +24,6 @@ static FString TPL_END_FOR_TOKEN(TEXT("endfor"));
 
 // The template serialization version
 static uint32 TPL_VERSION = 1;
-
-typedef TJsonWriterFactory< TCHAR, TCondensedJsonPrintPolicy<TCHAR> > FCondensedJsonStringWriterFactory;
 
 class TTemplateCompilerHelper
 {
@@ -185,21 +181,10 @@ public:
 	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
 	{
 		auto value = TTemplateCompilerHelper::GetValue(Key, Data);
-		if (value.IsValid())
+		FString valueStr;
+		if (value.IsValid() && value->TryGetString(valueStr))
 		{
-			FString valueStr;
-			const TSharedPtr<FJsonObject>* valueObj;
-			if (value->TryGetString(valueStr))
-			{
-				WriteStream.Serialize((void*)*valueStr, valueStr.Len() * sizeof(TCHAR));
-			}
-			else if (value->TryGetObject(valueObj))
-			{
-				FString OutputString;
-				auto Writer = FCondensedJsonStringWriterFactory::Create(&OutputString);
-				FJsonSerializer::Serialize(valueObj->ToSharedRef(), Writer);
-				WriteStream.Serialize((void*)*OutputString, OutputString.Len() * sizeof(TCHAR));
-			}
+			WriteStream.Serialize((void*)*valueStr, valueStr.Len() * sizeof(TCHAR));
 		}
 	}
 
