@@ -27,6 +27,8 @@ static FString TPL_END_FOR_TOKEN(TEXT("endfor"));
 // The template serialization version
 static uint32 TPL_VERSION = 1;
 
+typedef TJsonWriterFactory< TCHAR, TCondensedJsonPrintPolicy<TCHAR> > FCondensedJsonStringWriterFactory;
+
 class TTemplateCompilerHelper
 {
 public:
@@ -195,7 +197,7 @@ public:
 			{
 				FString OutputString;
 				auto Writer = FCondensedJsonStringWriterFactory::Create(&OutputString);
-				FJsonSerializer::Serialize(JsonPtr.ToSharedRef(), Writer);
+				FJsonSerializer::Serialize(valueObj->ToSharedRef(), Writer);
 				WriteStream.Serialize((void*)*OutputString, OutputString.Len() * sizeof(TCHAR));
 			}
 		}
