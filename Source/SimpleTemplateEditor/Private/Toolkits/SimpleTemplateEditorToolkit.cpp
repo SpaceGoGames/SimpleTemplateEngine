@@ -372,11 +372,17 @@ void FSimpleTemplateEditorToolkit::ActionCompile()
 			ErrorText.Append(CompileError);
 			ErrorText.Newline();
 		}
-		TemplateOutput->SetText(ErrorText);
+		if (TemplateOutput.IsValid())
+		{
+			TemplateOutput->SetText(ErrorText);
+		}
 	}
 	else
 	{
-		TemplateOutput->SetText(LOCTEXT("CompileSuccessful", "Template compiled successfully"));
+		if (TemplateOutput.IsValid())
+		{
+			TemplateOutput->SetText(LOCTEXT("CompileSuccessful", "Template compiled successfully"));
+		}
 		SaveAsset_Execute();
 	}
 }
