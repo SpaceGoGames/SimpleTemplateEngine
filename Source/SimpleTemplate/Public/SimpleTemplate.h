@@ -46,7 +46,7 @@ class SIMPLETEMPLATE_API USimpleTemplate
 
 public:
 
-#if WITH_EDITOR
+#if WITH_EDITORONLY_DATA
 	/** Holds the stored text. */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Simple Template")
 	FText Template;
@@ -60,11 +60,11 @@ public:
 	uint32 LineNumber;
 	UPROPERTY()
 	uint32 CharacterNumber;
+#endif
 
+#if WITH_EDITOR
 	bool Compile();
-
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-
 #endif
 
 	bool IsUpToDate() const
