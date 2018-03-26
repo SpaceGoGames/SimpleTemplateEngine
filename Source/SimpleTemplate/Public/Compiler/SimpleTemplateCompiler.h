@@ -252,7 +252,7 @@ public:
 	{
 		auto listDataPtr = TTemplateCompilerHelper::GetValue(List, Data);
 		const TArray<TSharedPtr<FJsonValue>>* list;
-		if (listDataPtr->TryGetArray(list))
+		if (listDataPtr.IsValid() && listDataPtr->TryGetArray(list))
 		{
 			for (int i = 0; i < list->Num(); i++)
 			{
@@ -314,7 +314,7 @@ public:
 		}
 
 		// if not var
-		if (IfValues[1].Equals("not") || IfValues[1].Equals("!"))
+		if (IfValues[1].Equals("not"))
 		{
 			bSign = false;
 			Key = IfValues[2];
@@ -322,8 +322,18 @@ public:
 		// if var
 		else if (IfValues.Num() == 2)
 		{
-			bSign = true;
 			Key = IfValues[1];
+			if (IfValues[1].StartsWith("!"))
+			{
+				bSign = false;
+				Key.RemoveFromStart("!");
+			}
+			else
+			{
+				bSign = true;
+				Key = IfValues[1];
+			}
+			
 		}
 		// if var == value | if var != value
 		else
@@ -394,7 +404,7 @@ private:
 		// Compare
 		FString lValue;
 		FString rValue;
-		return lValuePtr->TryGetString(lValue) && rValuePtr->TryGetString(rValue) && (lValue.Equals(rValue, bIgnoreCase ? ESearchCase::IgnoreCase : ESearchCase::CaseSensitive) == bSign);
+		return lValuePtr.IsValid() && rValuePtr.IsValid() && lValuePtr->TryGetString(lValue) && rValuePtr->TryGetString(rValue) && (lValue.Equals(rValue, bIgnoreCase ? ESearchCase::IgnoreCase : ESearchCase::CaseSensitive) == bSign);
 	}
 
 public:
@@ -828,7 +838,7 @@ private:
 	
 	bool IsEOF(const CharType& Char)
 	{
-		return Char == CharType('0');
+		return Char == CharType('\0');
 	}
 
 	bool IsTokenStart(const CharType& Char)

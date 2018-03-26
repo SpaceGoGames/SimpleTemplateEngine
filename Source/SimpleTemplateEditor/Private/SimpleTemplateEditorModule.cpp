@@ -166,7 +166,6 @@ private:
 	TSharedPtr<FExtensibilityManager> ToolBarExtensibilityManager;
 };
 
-
 IMPLEMENT_MODULE(FSimpleTemplateEditorModule, SimpleTemplateEditor);
 
 

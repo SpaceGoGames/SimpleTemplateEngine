@@ -11,20 +11,55 @@ void USimpleTemplate::Serialize(FArchive& Ar)
 	// Serialize token array
 	if (Ar.IsLoading())
 	{
+		int64 EndOffset = 0;
+		Ar << EndOffset;
+
 		uint32 TemplateVersion;
 		Ar << TemplateVersion;
+
 		if (TemplateVersion != TPL_VERSION)
 		{
 			UE_LOG(LogSTE, Error, TEXT("Serialized template version is incompatible with your current version! Need to recompile!"));
 			Status = ETemplateStatus::TS_Dirty;
+
+			// Skip over the data
+			Ar.Seek(EndOffset);
 		}
-		Tokens.Serialize(Ar);
+		else
+		{
+			Tokens.Serialize(Ar);
+		}
 	}
 	else if (Ar.IsSaving())
 	{
+		int64 SkipOffset = Ar.Tell();
+		// We have to serialize the placeholder value to count the real end offset
+		Ar << SkipOffset;
+
+		// Write the template version first
 		Ar << TPL_VERSION;
 		Tokens.Serialize(Ar);
+
+		// Set back to inject the offset to the end of the serialization, this way we can skip the data alltogether
+		int64 EndOffset = Ar.Tell();
+		Ar.Seek(SkipOffset);
+		Ar << EndOffset;
+		Ar.Seek(EndOffset);
 	}
+}
+
+FString USimpleTemplate::Interpret(TSharedPtr<FJsonObject> Data)
+{
+	if (IsUpToDate())
+	{
+		auto interpreter = TTemplateInterpreter::Create(Tokens);
+		FString OutString;
+		if (interpreter->Interpret(OutString, Data))
+		{
+			return OutString;
+		}
+	}
+	return FString();
 }
 
 FString USimpleTemplate::Interpret(TScriptInterface<ISimpleTemplateDataProvider> DataProvider)
