@@ -71,7 +71,7 @@ void FSimpleTemplateActions::ExportTemplates(TArray<TWeakObjectPtr<USimpleTempla
 	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
 	if (DesktopPlatform != nullptr)
 	{
-		FString OutputDirectory = FPaths::GameDir();
+		FString OutputDirectory = FPaths::ProjectDir();
 		FString FolderPath;
 		const bool bFolderSelected = DesktopPlatform->OpenDirectoryDialog(
 			FSlateApplication::Get().FindBestParentWindowHandleForDialogs(nullptr),

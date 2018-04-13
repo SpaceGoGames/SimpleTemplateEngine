@@ -244,11 +244,11 @@ TSharedRef<SDockTab> FSimpleTemplateEditorToolkit::HandleTabManagerSpawnTab(cons
 		if (SimpleTemplate->LastErrors.Num() > 0)
 		{
 			ErrorText.Append(LOCTEXT("CompileFailed", "Failed to compile template!").ToString());
-			ErrorText.Newline();
+			ErrorText += TEXT("\n");
 			for (auto& CompileError : SimpleTemplate->LastErrors)
 			{
 				ErrorText.Append(CompileError);
-				ErrorText.Newline();
+				ErrorText += TEXT("\n");
 			}
 		}
 
@@ -366,11 +366,11 @@ void FSimpleTemplateEditorToolkit::ActionCompile()
 	{
 		FString ErrorText;
 		ErrorText.Append(LOCTEXT("CompileFailed", "Failed to compile template!").ToString());
-		ErrorText.Newline();
+		ErrorText += TEXT("\n");
 		for (auto& CompileError : SimpleTemplate->LastErrors)
 		{
 			ErrorText.Append(CompileError);
-			ErrorText.Newline();
+			ErrorText += TEXT("\n");
 		}
 		if (TemplateOutput.IsValid())
 		{
@@ -429,7 +429,7 @@ void FSimpleTemplateEditorToolkit::ActionImport()
 	bool bOpened = false;
 	if (DesktopPlatform != nullptr)
 	{
-		const FString DefaultBrowsePath = FString::Printf(TEXT("%slogs/"), *FPaths::GameSavedDir());
+		const FString DefaultBrowsePath = FString::Printf(TEXT("%slogs/"), *FPaths::ProjectSavedDir());
 
 		bOpened = DesktopPlatform->OpenFileDialog(
 			FSlateApplication::Get().FindBestParentWindowHandleForDialogs(nullptr),
