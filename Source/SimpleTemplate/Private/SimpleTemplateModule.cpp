@@ -1,14 +1,12 @@
 // Copyright Playspace S.L. 2017
 
-#include "Modules/ModuleInterface.h"
-#include "Modules/ModuleManager.h"
-
+#include "ISimpleTemplate.h"
 
 /**
  * Implements the SimpleTemplate module.
  */
 class FSimpleTemplateModule
-	: public IModuleInterface
+	: public ISimpleTemplateModule
 {
 public:
 
@@ -25,3 +23,5 @@ public:
 
 
 IMPLEMENT_MODULE(FSimpleTemplateModule, SimpleTemplate);
+
+DEFINE_LOG_CATEGORY(LogSTE);

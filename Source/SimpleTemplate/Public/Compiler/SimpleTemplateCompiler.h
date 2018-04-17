@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ISimpleTemplate.h"
 #include "UObject/ObjectMacros.h"
 #include "UObject/Object.h"
 #include "Dom/JsonValue.h"
@@ -638,7 +639,7 @@ private:
 			{
 				if (NextEndToken(Buffer))
 				{
-					Buffer.Trim();
+					Buffer.TrimStartInline();
 					if (!AddToken(new FTokenVar(Buffer)))
 					{
 						return false;
@@ -655,7 +656,7 @@ private:
 			{
 				if (NextEndToken(Buffer))
 				{
-					Buffer.Trim();
+					Buffer.TrimStartInline();
 					if (Buffer.StartsWith(TPL_START_FOR_TOKEN))
 					{
 						if (!AddToken(new FTokenFor(Buffer)))
@@ -674,7 +675,7 @@ private:
 					}
 					else
 					{
-						Buffer.TrimTrailing();
+						Buffer.TrimEndInline();
 
 						// Check end token to match ParseState
 						if (ParseState.Num() > 0)

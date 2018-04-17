@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Internationalization/Text.h"
+#include "ISimpleTemplate.h"
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
 
@@ -14,8 +15,6 @@
 #include "Serialization/JsonTypes.h"
 
 #include "SimpleTemplate.generated.h"
-
-DECLARE_LOG_CATEGORY_EXTERN(LogSTE, Verbose, All);
 
 /**
 * Enumerates states a template can be in.

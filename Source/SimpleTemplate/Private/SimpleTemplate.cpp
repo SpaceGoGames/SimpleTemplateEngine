@@ -2,8 +2,6 @@
 
 #include "SimpleTemplate.h"
 
-DEFINE_LOG_CATEGORY(LogSTE);
-
 void USimpleTemplate::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
