@@ -956,12 +956,12 @@ public:
 
 protected:
 	TTemplateInterpreter(FTokenArray& InTokenTree)
-		: TokenTree(InTokenTree)
 	{
+		TokenTree = TokenTree;
 	}
 
 protected:
-	FTokenArray const TokenTree;
+	FTokenArray TokenTree;
 };
 
 template <class CharType = TCHAR>
