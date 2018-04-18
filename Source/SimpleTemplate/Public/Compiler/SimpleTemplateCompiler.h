@@ -956,8 +956,8 @@ public:
 
 protected:
 	TTemplateInterpreter(FTokenArray& InTokenTree)
+		: TokenTree(InTokenTree)
 	{
-		TokenTree = TokenTree;
 	}
 
 protected:
