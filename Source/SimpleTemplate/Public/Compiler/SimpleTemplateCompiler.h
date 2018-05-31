@@ -802,9 +802,20 @@ private:
 			{
 				break;
 			}
-			if (IsTokenStart(Char))
+			// Check for escape and append the next read
+			if (IsEscapeToken(Char))
 			{
-				return true;
+				if (!ReadNext(Char))
+				{
+					break;
+				}
+			}
+			else
+			{
+				if (IsTokenStart(Char))
+				{
+					return true;
+				}
 			}
 			Text.AppendChar(Char);
 		}
@@ -860,6 +871,11 @@ private:
 	bool IsControlToken(const CharType& Char)
 	{
 		return Char == CharType('%');
+	}
+
+	bool IsEscapeToken(const CharType& Char)
+	{
+		return Char == CharType('\\');
 	}
 
 };
