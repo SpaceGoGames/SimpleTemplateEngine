@@ -18,7 +18,7 @@ namespace UnrealBuildTool.Rules
 
 			PrivateIncludePaths.AddRange(
 				new string[] {
-					"Runtime/SimpleTemplate/Private",
+					"SimpleTemplate/Private",
 				});
 		}
 	}
