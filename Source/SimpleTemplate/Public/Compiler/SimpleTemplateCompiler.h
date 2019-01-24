@@ -24,7 +24,9 @@ static FString TPL_START_FOR_TOKEN(TEXT("for"));
 static FString TPL_END_FOR_TOKEN(TEXT("endfor"));
 
 // The template serialization version
-static uint32 TPL_VERSION = 1;
+// 1: Initial version
+// 2: If token changed it's bool values from uint32 with pack : 1 to a real bool
+static uint32 TPL_VERSION = 2;
 
 class TTemplateCompilerHelper
 {
@@ -374,11 +376,8 @@ public:
 	virtual void Serialize(FArchive& Ar) override
 	{
 		FTokenNested::Serialize(Ar);
-		bool bAux;
-		Ar << bAux;
-		bSign = bAux;
-		Ar << bAux;
-		bIgnoreCase = bAux;
+		Ar << bSign;
+		Ar << bIgnoreCase;
 		Ar << Key;
 		Ar << Value;
 	}
@@ -391,7 +390,18 @@ private:
 		{
 			bool boolValue = false;
 			auto keyDataPtr = TTemplateCompilerHelper::GetValue(Key, Data);
-			return keyDataPtr.IsValid() && keyDataPtr->TryGetBool(boolValue) && (boolValue == bSign);
+			if (keyDataPtr.IsValid())
+			{
+				// Only check against the actual singn in case we have a bool, all other types
+				// are TRUE if they exists and FALSE otherwise
+				if (keyDataPtr->TryGetBool(boolValue))
+				{
+					return boolValue == bSign;
+				}
+				return bSign;
+			}
+			// Just check the sign
+			return !bSign;
 		}
 
 		// Find l-value and r-value
@@ -409,8 +419,8 @@ private:
 	}
 
 public:
-	uint32 bSign : 1;
-	uint32 bIgnoreCase : 1;
+	bool bSign;
+	bool bIgnoreCase;
 	FString Key;
 	FString Value;
 };
