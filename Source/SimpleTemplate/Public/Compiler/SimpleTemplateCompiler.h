@@ -157,8 +157,7 @@ public:
 	virtual void Interpret(FTemplateCompilerContent& Context, FArchive& WriteStream, TSharedPtr<FJsonObject> Data) {}
 
 	// Some tokens are nested
-	virtual void SetChildren(TArray<TSharedPtr<FToken>>& children) {}
-	virtual TArray<TSharedPtr<FToken>>* GetChildren() { return nullptr; }
+	virtual void AddBranch(TArray<TSharedPtr<FToken>>& children) {}
 };
 
 typedef TSharedPtr<FToken> FTokenPtr;
@@ -261,14 +260,9 @@ public:
 	}
 
 	// Some tokens are nested
-	virtual void SetChildren(TArray<TSharedPtr<FToken>>& children)
+	virtual void AddBranch(TArray<TSharedPtr<FToken>>& children)
 	{
 		Children.Items = children;
-	}
-
-	virtual TArray<TSharedPtr<FToken>>* GetChildren()
-	{
-		return &Children.Items;
 	}
 
 public:
@@ -646,7 +640,7 @@ private:
 			{
 				FTokenArray children;
 				Parse(tokens, children, token->GetType() == ETokenType::For ? ETokenType::EndFor : ETokenType::EndIf);
-				token->SetChildren(children.Items);
+				token->AddBranch(children.Items);
 			}
 			else if (token->GetType() == mark)
 			{
