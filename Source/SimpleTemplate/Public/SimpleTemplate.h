@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Internationalization/Text.h"
+#include "ISimpleTemplate.h"
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
 
@@ -14,8 +15,6 @@
 #include "Serialization/JsonTypes.h"
 
 #include "SimpleTemplate.generated.h"
-
-DECLARE_LOG_CATEGORY_EXTERN(LogSTE, Verbose, All);
 
 /**
 * Enumerates states a template can be in.
@@ -46,7 +45,7 @@ class SIMPLETEMPLATE_API USimpleTemplate
 
 public:
 
-#if WITH_EDITOR
+#if WITH_EDITORONLY_DATA
 	/** Holds the stored text. */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Simple Template")
 	FText Template;
@@ -60,11 +59,11 @@ public:
 	uint32 LineNumber;
 	UPROPERTY()
 	uint32 CharacterNumber;
+#endif
 
+#if WITH_EDITOR
 	bool Compile();
-
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-
 #endif
 
 	bool IsUpToDate() const

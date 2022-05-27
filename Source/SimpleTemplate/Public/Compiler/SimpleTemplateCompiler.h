@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ISimpleTemplate.h"
 #include "UObject/ObjectMacros.h"
 #include "UObject/Object.h"
 #include "Dom/JsonValue.h"
@@ -23,12 +24,63 @@ static FString TPL_START_FOR_TOKEN(TEXT("for"));
 static FString TPL_END_FOR_TOKEN(TEXT("endfor"));
 
 // The template serialization version
-static uint32 TPL_VERSION = 1;
+// 1: Initial version
+// 2: If token changed it's bool values from uint32 with pack : 1 to a real bool
+static uint32 TPL_VERSION = 2;
+
+class SIMPLETEMPLATE_API FTemplateCompilerContent
+{
+public:
+	// The dynamic scope
+	TSharedPtr<FJsonObject> DynamicScope;
+
+	// The lexical scope
+	TArray<TSharedPtr<FJsonObject>> LexicalScope;
+};
 
 class TTemplateCompilerHelper
 {
 public:
-	static TSharedPtr<FJsonValue> GetValue(FString& Key, TSharedPtr<FJsonObject> Data)
+	static void PushScope(FTemplateCompilerContent& Context)
+	{
+		Context.LexicalScope.Push(MakeShareable(new FJsonObject()));
+	}
+
+	static void PopScope(FTemplateCompilerContent& Context)
+	{
+		Context.LexicalScope.Pop();
+	}
+
+	static TSharedPtr<FJsonValue> GetValue(FTemplateCompilerContent& Context, const FString& Key)
+	{
+		// Get it always from the lexical scope first
+		for (int32 i = Context.LexicalScope.Num()-1; i >= 0; i--)
+		{
+			if (Context.LexicalScope[i].IsValid() && Context.LexicalScope[i]->Values.Num() > 0)
+			{
+				TSharedPtr<FJsonValue> Value = GetValue(Key, Context.LexicalScope[i]);
+				if (Value.IsValid())
+				{
+					return Value;
+				}
+			}
+		}
+		
+		// Dynamic scope is our last guess
+		return GetValue(Key, Context.DynamicScope);
+	}
+
+	static void SetValue(FTemplateCompilerContent& Context, const FString& Key, TSharedPtr<FJsonValue>& Value)
+	{
+		TSharedPtr<FJsonObject> Scope = Context.LexicalScope.Last();
+		if (Scope.IsValid())
+		{
+			Scope->SetField(Key, Value);
+		}
+	}
+
+private:
+	static TSharedPtr<FJsonValue> GetValue(const FString& Key, TSharedPtr<FJsonObject> Data)
 	{
 		if (Data.IsValid() && !Key.IsEmpty())
 		{
@@ -102,11 +154,10 @@ public:
 	virtual void Serialize(FArchive& Ar) {}
 
 	// Interpret the token 
-	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) {}
+	virtual void Interpret(FTemplateCompilerContent& Context, FArchive& WriteStream, TSharedPtr<FJsonObject> Data) {}
 
 	// Some tokens are nested
-	virtual void SetChildren(TArray<TSharedPtr<FToken>>& children) {}
-	virtual TArray<TSharedPtr<FToken>>* GetChildren() { return nullptr; }
+	virtual void AddBranch(TArray<TSharedPtr<FToken>>& children) {}
 };
 
 typedef TSharedPtr<FToken> FTokenPtr;
@@ -144,7 +195,7 @@ public:
 		Ar << Text;
 	}
 
-	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
+	virtual void Interpret(FTemplateCompilerContent& Context, FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
 	{
 		WriteStream.Serialize((void*)*Text, Text.Len() * sizeof(TCHAR));
 	}
@@ -178,9 +229,9 @@ public:
 		Ar << Key;
 	}
 
-	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
+	virtual void Interpret(FTemplateCompilerContent& Context, FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
 	{
-		auto value = TTemplateCompilerHelper::GetValue(Key, Data);
+		auto value = TTemplateCompilerHelper::GetValue(Context, Key);
 		FString valueStr;
 		if (value.IsValid() && value->TryGetString(valueStr))
 		{
@@ -209,14 +260,9 @@ public:
 	}
 
 	// Some tokens are nested
-	virtual void SetChildren(TArray<TSharedPtr<FToken>>& children)
+	virtual void AddBranch(TArray<TSharedPtr<FToken>>& children)
 	{
 		Children.Items = children;
-	}
-
-	virtual TArray<TSharedPtr<FToken>>* GetChildren()
-	{
-		return &Children.Items;
 	}
 
 public:
@@ -248,9 +294,10 @@ public:
 		return FString();
 	}
 
-	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
+	virtual void Interpret(FTemplateCompilerContent& Context, FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
 	{
-		auto listDataPtr = TTemplateCompilerHelper::GetValue(List, Data);
+		TTemplateCompilerHelper::PushScope(Context);
+		auto listDataPtr = TTemplateCompilerHelper::GetValue(Context, List);
 		const TArray<TSharedPtr<FJsonValue>>* list;
 		if (listDataPtr.IsValid() && listDataPtr->TryGetArray(list))
 		{
@@ -260,19 +307,25 @@ public:
 				// loop.index
 				TSharedPtr<FJsonObject> loopData = MakeShareable(new FJsonObject());
 				loopData->SetNumberField("index", i);
-				Data->SetObjectField("loop", loopData);
+				TSharedPtr<FJsonValue> LoopValue = MakeShareable(new FJsonValueObject(loopData));
+
+				TTemplateCompilerHelper::SetValue(Context, "loop", LoopValue);
+
+				//Data->SetField();
 
 				// Set item
 				auto item = (*list)[i];
-				Data->SetField(Value, item);
+				TTemplateCompilerHelper::SetValue(Context, Value, item);
+				//Data->SetField(Value, item);
 
 				// Now propagate
 				for (auto child : Children.Items)
 				{
-					child->Interpret(WriteStream, Data);
+					child->Interpret(Context, WriteStream, Data);
 				}
 			}
 		}
+		TTemplateCompilerHelper::PopScope(Context);
 	}
 
     ETokenType GetType() const override
@@ -354,15 +407,17 @@ public:
 		return FString();
 	}
 
-	virtual void Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
+	virtual void Interpret(FTemplateCompilerContent& Context, FArchive& WriteStream, TSharedPtr<FJsonObject> Data) override
 	{
-		if (IsTrue(Data))
+		TTemplateCompilerHelper::PushScope(Context);
+		if (IsTrue(Context, Data))
 		{
 			for(auto child : Children.Items)
 			{
-				child->Interpret(WriteStream, Data);
+				child->Interpret(Context, WriteStream, Data);
 			}
 		}
+		TTemplateCompilerHelper::PopScope(Context);
 	}
 
     ETokenType GetType() const override
@@ -373,29 +428,37 @@ public:
 	virtual void Serialize(FArchive& Ar) override
 	{
 		FTokenNested::Serialize(Ar);
-		bool bAux;
-		Ar << bAux;
-		bSign = bAux;
-		Ar << bAux;
-		bIgnoreCase = bAux;
+		Ar << bSign;
+		Ar << bIgnoreCase;
 		Ar << Key;
 		Ar << Value;
 	}
 
 private:
-	bool IsTrue(TSharedPtr<FJsonObject> Data)
+	bool IsTrue(FTemplateCompilerContent& Context, TSharedPtr<FJsonObject> Data)
 	{
 		// Only key provided
 		if (Value.IsEmpty())
 		{
 			bool boolValue = false;
-			auto keyDataPtr = TTemplateCompilerHelper::GetValue(Key, Data);
-			return keyDataPtr.IsValid() && keyDataPtr->TryGetBool(boolValue) && (boolValue == bSign);
+			auto keyDataPtr = TTemplateCompilerHelper::GetValue(Context, Key);
+			if (keyDataPtr.IsValid())
+			{
+				// Only check against the actual singn in case we have a bool, all other types
+				// are TRUE if they exists and FALSE otherwise
+				if (keyDataPtr->TryGetBool(boolValue))
+				{
+					return boolValue == bSign;
+				}
+				return bSign;
+			}
+			// Just check the sign
+			return !bSign;
 		}
 
 		// Find l-value and r-value
-		auto lValuePtr = TTemplateCompilerHelper::GetValue(Key, Data);
-		auto rValuePtr = TTemplateCompilerHelper::GetValue(Value, Data);
+		auto lValuePtr = TTemplateCompilerHelper::GetValue(Context, Key);
+		auto rValuePtr = TTemplateCompilerHelper::GetValue(Context, Value);
 		if (!rValuePtr.IsValid())
 		{
 			rValuePtr = MakeShareable(new FJsonValueString(Value.TrimQuotes()));
@@ -408,8 +471,8 @@ private:
 	}
 
 public:
-	uint32 bSign : 1;
-	uint32 bIgnoreCase : 1;
+	bool bSign;
+	bool bIgnoreCase;
 	FString Key;
 	FString Value;
 };
@@ -577,7 +640,7 @@ private:
 			{
 				FTokenArray children;
 				Parse(tokens, children, token->GetType() == ETokenType::For ? ETokenType::EndFor : ETokenType::EndIf);
-				token->SetChildren(children.Items);
+				token->AddBranch(children.Items);
 			}
 			else if (token->GetType() == mark)
 			{
@@ -638,7 +701,7 @@ private:
 			{
 				if (NextEndToken(Buffer))
 				{
-					Buffer.Trim();
+					Buffer.TrimStartInline();
 					if (!AddToken(new FTokenVar(Buffer)))
 					{
 						return false;
@@ -655,7 +718,7 @@ private:
 			{
 				if (NextEndToken(Buffer))
 				{
-					Buffer.Trim();
+					Buffer.TrimStartInline();
 					if (Buffer.StartsWith(TPL_START_FOR_TOKEN))
 					{
 						if (!AddToken(new FTokenFor(Buffer)))
@@ -674,7 +737,7 @@ private:
 					}
 					else
 					{
-						Buffer.TrimTrailing();
+						Buffer.TrimEndInline();
 
 						// Check end token to match ParseState
 						if (ParseState.Num() > 0)
@@ -801,9 +864,20 @@ private:
 			{
 				break;
 			}
-			if (IsTokenStart(Char))
+			// Check for escape and append the next read
+			if (IsEscapeToken(Char))
 			{
-				return true;
+				if (!ReadNext(Char))
+				{
+					break;
+				}
+			}
+			else
+			{
+				if (IsTokenStart(Char))
+				{
+					return true;
+				}
 			}
 			Text.AppendChar(Char);
 		}
@@ -861,6 +935,11 @@ private:
 		return Char == CharType('%');
 	}
 
+	bool IsEscapeToken(const CharType& Char)
+	{
+		return Char == CharType('\\');
+	}
+
 };
 
 class SIMPLETEMPLATE_API FStringTemplateParser
@@ -914,10 +993,15 @@ public:
 
 	bool Interpret(FArchive& WriteStream, TSharedPtr<FJsonObject> Data)
 	{
+		FTemplateCompilerContent Context;
+		Context.DynamicScope = Data;
+
+		TTemplateCompilerHelper::PushScope(Context);
 		for (auto token : TokenTree.Items)
 		{
-			token->Interpret(WriteStream, Data);
+			token->Interpret(Context, WriteStream, Data);
 		}
+		TTemplateCompilerHelper::PopScope(Context);
 		return true;
 	}
 
@@ -960,7 +1044,7 @@ protected:
 	}
 
 protected:
-	FTokenArray const TokenTree;
+	FTokenArray TokenTree;
 };
 
 template <class CharType = TCHAR>
